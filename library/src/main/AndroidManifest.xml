@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <!--
+          All four are exported="false" on purpose: they render auth headers,
+          cookies and response payloads. Another app on the device must never
+          be able to launch them.
+        -->
+        <activity
+            android:name=".ui.RequestListActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="Network Inspector"
+            android:taskAffinity="com.networkinspector.inspector" />
+
+        <activity
+            android:name=".ui.RequestDetailActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.networkinspector.inspector" />
+
+        <activity
+            android:name=".ui.AnalyticsListActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="Analytics Inspector"
+            android:taskAffinity="com.networkinspector.inspector" />
+
+        <activity
+            android:name=".ui.AnalyticsDetailActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.networkinspector.inspector" />
+
+        <receiver
+            android:name=".notification.ClearRequestsReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

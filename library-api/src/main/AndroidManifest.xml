@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pure data models. No permissions, no components: this module ships in both
+  debug and release builds, so it must stay inert.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

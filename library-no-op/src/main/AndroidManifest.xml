@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Intentionally empty. No POST_NOTIFICATIONS permission, no activities, no
+  receivers. Nothing from the inspector may merge into a release manifest.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
