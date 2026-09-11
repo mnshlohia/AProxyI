@@ -26,6 +26,12 @@ android {
     }
 
     buildFeatures { viewBinding = true }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -42,6 +48,12 @@ dependencies {
     // not use OkHttp never get it pulled in, and those that do keep their own
     // version rather than having this library force one.
     compileOnly(libs.okhttp)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    // The interceptor is compileOnly in the main source set; tests need it real.
+    testImplementation(libs.okhttp)
 }
 
 afterEvaluate {

@@ -282,6 +282,28 @@ as the primary route.
 
 ---
 
+## Capture is asynchronous
+
+`onRequestSuccess` / `onRequestFailed` hand the expensive work — body
+formatting, storage, listener notification — to a single background thread, so
+the calling thread is never blocked on a large payload.
+
+The consequence: a request is **not** in the store the instant the completion
+call returns. Reading immediately after will miss it.
+
+```kotlin
+NetworkInspector.onRequestSuccess(id, 200, body)
+// ...not necessarily visible yet
+```
+
+This only matters if you are driving the inspector from code rather than reading
+the UI, which refreshes from a listener and is unaffected.
+
+One exception: `onRequestStart` formats the request body on the calling thread.
+Pretty-printing is skipped above 64 KB, so the cost stays bounded.
+
+---
+
 ## Stale in-flight requests
 
 The callback API depends on you calling `onRequestSuccess` / `onRequestFailed` /
@@ -326,6 +348,7 @@ any public signature, run `apiDump` and commit the result.**
 
 ```bash
 ./gradlew assembleDebug assembleRelease   # all modules
+./gradlew testDebugUnitTest               # 35 unit tests
 ./gradlew apiCheck                        # public API unchanged
 ./gradlew :sample:assembleRelease         # proves both artifacts compile
 ./gradlew publishToMavenLocal             # install locally for testing
@@ -356,7 +379,7 @@ the two artifacts ever drift.
 
 ## Contributing
 
-1. `./gradlew assembleDebug assembleRelease :sample:assembleRelease`
+1. `./gradlew assembleDebug assembleRelease testDebugUnitTest :sample:assembleRelease`
 2. If you changed a public signature, mirror it in `library-no-op` **and** run
    `./gradlew apiDump`, committing the updated `*.api` files.
 3. Keep new implementation code under `com.networkinspector.internal.*` and

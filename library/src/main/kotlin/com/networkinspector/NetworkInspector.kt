@@ -359,8 +359,44 @@ object NetworkInspector {
     /**
      * Get all recorded requests (newest first)
      */
+
+    /**
+     * Test-only. Blocks until the single-threaded worker has drained.
+     *
+     * Completion handling is deliberately asynchronous, so a request is not in
+     * the store the instant onRequestSuccess/onRequestFailed returns. The
+     * executor is FIFO, so a task that completes implies every prior task did.
+     */
+    internal fun awaitIdleForTesting(timeoutMs: Long = 5_000L): Boolean {
+        val latch = java.util.concurrent.CountDownLatch(1)
+        executor.execute { latch.countDown() }
+        return latch.await(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+    }
+
     /** The active config, so collaborators do not invent their own limits. */
     internal fun currentConfig(): NetworkInspectorConfig = config
+
+    /**
+     * Test-only. Drops every piece of state so a fresh [init] can run with a
+     * different config. `internal`, so it is not part of the public API the
+     * no-op has to mirror.
+     */
+    internal fun resetForTesting() {
+        synchronized(this) {
+            synchronized(requests) { requests.clear() }
+            activeRequests.clear()
+            listeners.clear()
+            totalRequests.set(0)
+            successfulRequests.set(0)
+            failedRequests.set(0)
+            activeRequestCount.set(0)
+            lastSweepAt.set(0)
+            notificationManager = null
+            appContext = null
+            config = NetworkInspectorConfig.RELEASE
+            initialized = false
+        }
+    }
 
     internal fun getRequests(): List<NetworkRequest> = synchronized(requests) { requests.toList() }
     

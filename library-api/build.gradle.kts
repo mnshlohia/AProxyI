@@ -57,3 +57,7 @@ afterEvaluate {
         }
     }
 }
+
+dependencies {
+    testImplementation(libs.junit)
+}

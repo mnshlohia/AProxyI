@@ -41,6 +41,16 @@ jobs:
                <(sort library-no-op/api/library-no-op.api) \
             || { echo "::error::library and library-no-op public APIs have diverged"; exit 1; }
 
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/'
+
       - name: Lint
         run: ./gradlew :library:lintRelease --stacktrace
 

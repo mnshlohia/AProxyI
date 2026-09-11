@@ -172,6 +172,20 @@ object AnalyticsInspector {
     /**
      * Clear all events
      */
+
+    /**
+     * Test-only. Blocks until the single-threaded worker has drained.
+     *
+     * Completion handling is deliberately asynchronous, so a request is not in
+     * the store the instant onRequestSuccess/onRequestFailed returns. The
+     * executor is FIFO, so a task that completes implies every prior task did.
+     */
+    internal fun awaitIdleForTesting(timeoutMs: Long = 5_000L): Boolean {
+        val latch = java.util.concurrent.CountDownLatch(1)
+        executor.execute { latch.countDown() }
+        return latch.await(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+    }
+
     @JvmStatic
     fun clearAll() {
         try {
