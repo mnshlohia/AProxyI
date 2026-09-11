@@ -3,38 +3,120 @@
 [![CI](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml/badge.svg)](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-An on-device network and analytics inspector for Android. Drop it into any app
-and inspect every request, response and analytics event **from the phone
+Inspect every network request, response and analytics event **on the device
 itself** — no laptop, no proxy, no CA certificate, no root.
 
-Because it runs inside the app, above the TLS layer, certificate pinning does
+Because it runs inside your app, above the TLS layer, certificate pinning does
 not block it.
 
-## Why not just use Chucker
+|                      | NetworkInspector                                    | Chucker                        |
+|----------------------|-----------------------------------------------------|--------------------------------|
+| HTTP client          | **Any** — callback API; OkHttp interceptor optional  | OkHttp only                    |
+| Analytics events     | **Yes** — Firebase, CleverTap, AppsFlyer, Facebook   | No                             |
+| Redaction by default | **8 headers + query params**, at capture             | None (`headersToRedact` empty) |
+| URL query redaction  | **Yes**                                              | No                             |
+| Storage              | **In memory only**                                   | Room, persisted to disk        |
 
-Two differences, both deliberate:
+---
 
-|                        | NetworkInspector                                    | Chucker                       |
-|------------------------|-----------------------------------------------------|-------------------------------|
-| HTTP client            | **Any** — callback API; OkHttp interceptor optional  | OkHttp only                   |
-| Analytics events       | **Yes** — Firebase, CleverTap, AppsFlyer, Facebook   | No                            |
-| Redaction by default   | **8 headers + query params**, at capture             | None (`headersToRedact` empty)|
-| URL query redaction    | **Yes**                                              | No                            |
-| Storage                | **In memory only**                                   | Room, persisted to disk       |
+## Quick start
 
-Staying in memory is a choice, not a missing feature: captured traffic contains
-live credentials, and disk persistence outlives the debugging session.
+**1. Add both dependencies.** Both lines are required.
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    debugImplementation("io.github.mnshlohia.networkinspector:library:0.1.0")
+    releaseImplementation("io.github.mnshlohia.networkinspector:library-no-op:0.1.0")
+}
+```
+
+**2. Initialise in `Application.onCreate()`.**
+
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        NetworkInspector.init(this)
+    }
+}
+```
+
+**3. Capture traffic.** With OkHttp or Retrofit, that's one interceptor:
+
+```kotlin
+val client = OkHttpClient.Builder()
+    .addInterceptor(authInterceptor)
+    .addInterceptor(NetworkInspectorInterceptor())   // add LAST — see below
+    .build()
+```
+
+**4. Open it.** Wire this to a debug menu item, long-press, or shake gesture:
+
+```kotlin
+NetworkInspector.launch(context)
+```
+
+That's the whole integration. There is also an ongoing notification you can tap.
+
+---
+
+## The one thing to understand
+
+**Write your integration code in your normal `main` source set. Do not guard it
+with `if (BuildConfig.DEBUG)`, and do not put it in a `debug/` source set.**
+
+The two artifacts expose an *identical* public API. In debug you link the real
+implementation; in release you link hollow stubs where every method is empty. So
+this line:
+
+```kotlin
+NetworkInspector.init(this)
+```
+
+compiles in both variants and does nothing in release. The release APK contains
+no capture code at all — not disabled, **absent**.
+
+```kotlin
+// Correct — plain code in the main source set
+NetworkInspector.init(this)
+NetworkInspector.launch(context)
+
+// Unnecessary — the no-op already handles this
+if (BuildConfig.DEBUG) { NetworkInspector.init(this) }
+```
+
+The only thing you may want to guard is your *entry point UI* — a "Developer
+tools" menu item — since in release it would open nothing.
+
+```kotlin
+// NetworkInspector.isEnabled() is false in release builds
+if (NetworkInspector.isEnabled()) {
+    menu.add("Network Inspector").setOnMenuItemClickListener {
+        NetworkInspector.launch(this); true
+    }
+}
+```
 
 ---
 
 ## Installation
 
+Until this is on Maven Central, publish locally:
+
+```bash
+git clone https://github.com/mnshlohia/AProxyI
+cd AProxyI
+./gradlew publishToMavenLocal
+```
+
 ```kotlin
-// settings.gradle.kts — until published to Maven Central
+// settings.gradle.kts
 dependencyResolutionManagement {
     repositories {
+        google()
         mavenCentral()
-        mavenLocal()   // if you ran ./gradlew publishToMavenLocal
+        mavenLocal()
     }
 }
 ```
@@ -47,31 +129,160 @@ dependencies {
 }
 ```
 
-Both artifacts expose an identical public API, so the same code compiles in both
-variants. **Both lines are required** — omit the `releaseImplementation` and your
-release build will not compile.
+Requires minSdk 21. Built against compileSdk 35, Kotlin 2.0, AGP 8.7.
 
-Minimum SDK 21. Compiled against SDK 35, Kotlin 2.0, AGP 8.7.
+> **If you omit the `releaseImplementation` line, your release build will not
+> compile.** That is deliberate: it is a loud, early failure instead of a silent
+> one.
 
 ---
 
-## Setup
+## Integration recipes
 
-### 1. Initialise
+Pick the one matching your networking layer. You only need one.
+
+### Retrofit / OkHttp
 
 ```kotlin
-class MyApp : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        NetworkInspector.init(this)
+val client = OkHttpClient.Builder()
+    .addInterceptor(authInterceptor)
+    .addInterceptor(NetworkInspectorInterceptor())
+    .build()
+
+val retrofit = Retrofit.Builder()
+    .baseUrl(BASE_URL)
+    .client(client)
+    .build()
+```
+
+**Interceptor ordering matters.** OkHttp runs application interceptors in the
+order you add them, so:
+
+- Add the inspector **last** to see the request as it finally goes out, with
+  headers your auth/header interceptors added.
+- Add it **first** to see the request exactly as your code built it, before
+  anything else touched it.
+- Use `addNetworkInterceptor` instead to see the true wire form — after
+  redirects, with gzip and real connection headers.
+
+Most people want it **last**.
+
+### Coroutines / suspend functions
+
+```kotlin
+suspend fun fetchOrders(): List<Order> =
+    NetworkInspectorWrapper.trackSuspend("$BASE_URL/orders") {
+        api.getOrders()
+    }
+```
+
+Failures are recorded and rethrown, so your error handling is unchanged.
+
+### Ktor, Volley, HttpURLConnection — any client
+
+Use the callback API. Call `onRequestStart`, keep the returned id, then call
+**exactly one** completion method.
+
+```kotlin
+val id = NetworkInspector.onRequestStart(
+    url = url,
+    method = "POST",
+    headers = headers,
+    body = jsonPayload,
+    tag = "checkout"          // optional; searchable in the UI
+)
+
+try {
+    val response = client.execute(request)
+    NetworkInspector.onRequestSuccess(id, response.code, response.body, response.headers)
+} catch (e: IOException) {
+    NetworkInspector.onRequestFailed(id, 0, e)
+}
+```
+
+> **Always complete the request.** A request with no completion call is swept
+> into `TIMED_OUT` after 60s and shows up as failed. That is by design — it makes
+> a forgotten callback visible instead of silently inflating the active count.
+
+### Blocking calls — let the wrapper do it
+
+```kotlin
+val result = NetworkInspectorWrapper.track("$BASE_URL/profile") {
+    api.getProfile()          // success and failure recorded automatically
+}
+
+// When you have a status code to report
+val body = NetworkInspectorWrapper.trackWithCode("$BASE_URL/profile") {
+    val r = api.getProfile()
+    r.code to r.body
+}
+```
+
+### Builder style
+
+```kotlin
+NetworkInspectorWrapper.request()
+    .url("$BASE_URL/orders")
+    .post()
+    .header("X-Request-Id", requestId)
+    .body(payload)
+    .tag("checkout")
+    .execute { api.createOrder(payload) }
+```
+
+### Existing callback-based clients
+
+```kotlin
+val tracker = CallbackInterceptor.create<OrderResponse>(
+    url = "$BASE_URL/orders",
+    method = "POST",
+    body = payload
+)
+
+api.createOrder(payload, object : Callback<OrderResponse> {
+    override fun onSuccess(response: OrderResponse) {
+        tracker.onSuccess(200, response)
+        // your existing handling
+    }
+
+    override fun onError(code: Int, e: Throwable) {
+        tracker.onFailure(code, e)
+        // your existing handling
+    }
+})
+```
+
+---
+
+## Analytics events
+
+Log to the inspector alongside your real analytics call. The cleanest way is a
+thin wrapper you call instead of the SDK directly:
+
+```kotlin
+object Analytics {
+    fun log(name: String, params: Bundle) {
+        Firebase.analytics.logEvent(name, params)
+        AnalyticsInspector.logEvent(name, params, AnalyticsSource.FIREBASE)
     }
 }
 ```
 
-In release this resolves to an empty method. `init()` is idempotent — a second
-call logs a warning and returns.
+Sources: `FIREBASE`, `CLEVERTAP`, `APPSFLYER`, `FACEBOOK`. There is a `Bundle`
+overload and a `Map<String, Any?>` overload.
 
-With custom configuration:
+```kotlin
+AnalyticsInspector.logEvent("add_to_cart", mapOf("sku" to sku, "qty" to 2))
+```
+
+View them with `NetworkInspector.launchAnalytics(context)`.
+
+`NetworkInspector.init()` drives `AnalyticsInspector` too — you do not enable it
+separately.
+
+---
+
+## Configuration
 
 ```kotlin
 NetworkInspector.init(
@@ -79,139 +290,96 @@ NetworkInspector.init(
     NetworkInspectorConfig(
         maxRequests = 500,
         maxBodySize = 200_000,
-        showNotification = true,
-        logToLogcat = true,
-        excludedHosts = listOf("""analytics\."""),   // matched against host only
-        excludedPaths = listOf("^/health$"),         // matched against path only
+        excludedHosts = listOf("""firebase\.""", """crashlytics\."""),
+        excludedPaths = listOf("^/health$", "^/ping$"),
+        redactedHeaders = NetworkInspectorConfig.DEFAULT_REDACTED_HEADERS + "X-Internal-Sig",
         activeRequestTimeoutMs = 60_000L
     )
 )
 ```
 
-### 2. Add an entry point
+| Option | Default | Meaning |
+|---|---|---|
+| `enabled` | `true` | Master switch. `false` captures nothing. |
+| `showNotification` | `true` | Ongoing notification with live counts. |
+| `maxRequests` | `500` | Ring size; oldest are dropped. |
+| `maxBodySize` | `200_000` | Max stored body length, in characters. |
+| `logToLogcat` | `true` | Mirror captures to Logcat. |
+| `notificationChannelName` | `"Network Inspector"` | Channel name shown in settings. |
+| `excludedHosts` | empty | Regexes matched against the **host only**. |
+| `excludedPaths` | empty | Regexes matched against the **path only**. |
+| `redactedHeaders` | 8 headers | Header names whose values are replaced. |
+| `redactedQueryParams` | see below | Query names whose values are replaced. |
+| `activeRequestTimeoutMs` | `60_000` | Sweep in-flight requests after this. `0` disables. |
 
-```kotlin
-NetworkInspector.launch(context)           // network requests
-NetworkInspector.launchAnalytics(context)  // analytics events
-```
+Presets: `NetworkInspectorConfig.DEBUG` (everything on) and
+`NetworkInspectorConfig.RELEASE` (everything off).
 
-Hang this off a debug drawer item, an overflow entry, or a shake detector. It
-works immediately after `init()`, before any request has been made.
-
-There is also an ongoing notification — see [Notifications](#notifications).
-
-### 3. Capture traffic
-
-Pick whichever fits your networking layer.
-
-#### OkHttp / Retrofit
-
-```kotlin
-val client = OkHttpClient.Builder()
-    .addInterceptor(NetworkInspectorInterceptor())
-    .build()
-```
-
-In release this resolves to a no-op interceptor that calls
-`chain.proceed(chain.request())`.
-
-> Register it as an **application** interceptor to see the call as your code
-> issued it, or as a **network** interceptor to see it as it went on the wire
-> (post-redirect, post-gzip, with real connection headers).
-
-#### Any other client — the callback API
-
-```kotlin
-val id = NetworkInspector.onRequestStart(
-    url = url,
-    method = "POST",
-    headers = headers,
-    body = payload
-)
-
-// exactly one of:
-NetworkInspector.onRequestSuccess(id, 200, responseBody, responseHeaders)
-NetworkInspector.onRequestFailed(id, 500, exception)
-NetworkInspector.onRequestCancelled(id)
-```
-
-**You must call one of the three.** A request with no completion call is swept
-into `TIMED_OUT` after `activeRequestTimeoutMs` — see
-[Stale in-flight requests](#stale-in-flight-requests).
-
-#### Fluent wrapper
-
-```kotlin
-// Automatic success/failure tracking around a block
-val result = NetworkInspectorWrapper.track(url) { api.fetch() }
-
-// When you have a status code
-NetworkInspectorWrapper.trackWithCode(url) { api.fetchWithCode() }
-
-// Coroutines
-NetworkInspectorWrapper.trackSuspend(url) { api.fetchSuspending() }
-
-// Builder
-NetworkInspectorWrapper.request()
-    .url(url)
-    .post()
-    .header("X-Request-Id", id)
-    .body(payload)
-    .execute { api.createOrder(payload) }
-```
-
-#### Wrapping existing callbacks
-
-```kotlin
-val tracker = CallbackInterceptor.create<OrderResponse>(url, "POST", body = payload)
-
-api.createOrder(payload, object : Callback<OrderResponse> {
-    override fun onSuccess(response: OrderResponse) {
-        tracker.onSuccess(200, response)
-        // your handling
-    }
-    override fun onError(e: Throwable) {
-        tracker.onFailure(500, e)
-        // your handling
-    }
-})
-```
-
-### 4. Capture analytics events
-
-```kotlin
-// Alongside your real analytics call
-firebaseAnalytics.logEvent(name, bundle)
-AnalyticsInspector.logEvent(name, bundle, AnalyticsSource.FIREBASE)
-```
-
-`AnalyticsSource` covers `FIREBASE`, `CLEVERTAP`, `APPSFLYER` and `FACEBOOK`.
-Both a `Bundle` and a `Map<String, Any?>` overload exist.
-
-`NetworkInspector.init()` drives `AnalyticsInspector` too — you do not enable it
-separately.
+`excludedHosts` and `excludedPaths` really do scope to host and path — an
+`excludedHosts` pattern will not match the same text appearing in a path.
 
 ---
 
-## Debug-only by construction
+## Best practices
 
-The inspector captures `Authorization` headers, cookies, full request and
-response bodies, and analytics payloads. In a consumer app that means addresses,
-phone numbers and order data. Shipping that capture code in a release build is a
-data-leak surface, so this project makes it **structurally impossible** rather
-than relying on a runtime flag.
+**Do**
 
-| Module          | Wired via                | Contains                                       |
-|-----------------|--------------------------|------------------------------------------------|
-| `library`       | `debugImplementation`    | Real implementation: capture, storage, UI      |
-| `library-no-op` | `releaseImplementation`  | Hollow stubs. No capture, no UI, no permission |
-| `library-api`   | transitive (both)        | Inert data models shared by the two            |
+- Put integration code in `main`, unguarded. That is what the no-op is for.
+- Add the OkHttp interceptor **last** so you see final headers.
+- Give requests a `tag` — it is searchable in the UI.
+- Exclude your own analytics and crash-reporting hosts, so the list stays
+  readable.
+- Provide a manual entry point (`launch()`); do not rely only on the
+  notification.
+
+**Don't**
+
+- Don't wrap calls in `if (BuildConfig.DEBUG)` — redundant, and it inverts the
+  point of the no-op artifact.
+- Don't call `init()` more than once. It is idempotent; a second call logs a
+  warning and is ignored.
+- Don't forget a completion call on the callback API.
+- Don't expect a real token back — redaction is irreversible by design.
+- Don't read `getRequests()` expecting a request you just completed: capture is
+  asynchronous (see below).
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| Release build fails to compile | Missing the `releaseImplementation(...library-no-op...)` line. |
+| Nothing is captured | `init()` never ran, or `enabled = false`. Check `NetworkInspector.isEnabled()`. |
+| Notification never appears | `POST_NOTIFICATIONS` was denied on Android 13+, or no request has been made yet — the notification is posted from the request lifecycle, not from `init()`. Use `launch()` instead. |
+| Auth headers missing from captures | The inspector interceptor runs before your auth interceptor. Add it last. |
+| Requests stuck as "active" | A completion call is missing on some path. They now appear as `TIMED_OUT` after 60s — that entry tells you which call site to fix. |
+| Tokens show as `**REDACTED**` | Working as intended. Redaction happens at capture and is irreversible. |
+| A request you just made isn't listed | Capture is asynchronous; the UI refreshes itself via a listener. |
+| Some traffic is invisible | Only traffic you route through the interceptor or the callback API is captured. WebView and native/NDK traffic is not. |
+
+---
+
+## How it works
+
+### Debug-only by construction
+
+The inspector captures `Authorization` headers, cookies, full bodies and
+analytics payloads. In a consumer app that is addresses, phone numbers and order
+data. Shipping that in release is a data-leak surface, so it is made
+*structurally impossible* rather than gated on a runtime flag.
+
+| Module | Wired via | Contains |
+|---|---|---|
+| `library` | `debugImplementation` | Real implementation: capture, storage, UI |
+| `library-no-op` | `releaseImplementation` | Hollow stubs. No capture, no UI, no permission |
+| `library-api` | transitive (both) | Inert data models shared by the two |
 
 This is stronger than `if (BuildConfig.DEBUG)`, which inside a library resolves
-against the *library's* `BuildConfig` rather than the host app's, and would leave
-the capture code sitting in the release APK relying on R8 to remove it.
+against the *library's* `BuildConfig`, not your app's, and leaves the capture
+code in the APK relying on R8 to strip it.
 
-**Verified on every CI run**, not asserted. From the sample app's APKs:
+**Verified on every CI run** against the sample app's real APKs:
 
 | | Debug | Release |
 |---|---|---|
@@ -220,127 +388,63 @@ the capture code sitting in the release APK relying on R8 to remove it.
 | `POST_NOTIFICATIONS` permission | yes | **no** |
 | APK size | 6.5 MB | 2.9 MB |
 
-What remains in release is the no-op stubs plus the inert models — data classes
-that nothing ever populates.
+### Redaction
 
----
+Redaction happens **at capture and is irreversible** — secrets never enter the
+in-memory store, so they cannot escape via the UI, share, or copy-as-cURL.
 
-## Redaction
-
-Sensitive values are redacted **at capture, irreversibly**. They never enter the
-in-memory store, so they cannot escape through the inspector UI, the share
-action, or copy-as-cURL. This applies to the callback API and the OkHttp
-interceptor alike.
-
-Redacted by default:
-
-- **Headers** — `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`,
+- **Headers**: `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`,
   `X-Api-Key`, `X-Auth-Token`, `X-Access-Token`, `X-Csrf-Token`
-- **URL query parameters and `params`** — names matching `key`, `sid`, `sig`,
-  `otp`, `pin` exactly, or *containing* `token`, `secret`, `password`, `passwd`,
-  `pwd`, `auth`, `signature`, `session`, `apikey`, `api_key`, `credential`. That
-  covers `access_token`, `oauth_token` and `client_secret` without enumerating
-  every vendor spelling.
+- **Query params and `params`**: names matching `key`, `sid`, `sig`, `otp`,
+  `pin` exactly, or *containing* `token`, `secret`, `password`, `passwd`, `pwd`,
+  `auth`, `signature`, `session`, `apikey`, `api_key`, `credential` — covering
+  `access_token`, `oauth_token`, `client_secret` without listing every vendor.
 
-```kotlin
-NetworkInspectorConfig(
-    redactedHeaders = NetworkInspectorConfig.DEFAULT_REDACTED_HEADERS + "X-Internal-Sig",
-    redactedQueryParams = NetworkInspectorConfig.DEFAULT_REDACTED_QUERY_PARAMS + "uid"
-)
-```
+**The tradeoff:** you cannot read a real token back to reproduce a 401 in curl.
+That was chosen deliberately — a debug tool holding live credentials is one
+screenshot away from leaking them. Log it yourself at the call site if you need
+it.
 
-**The tradeoff:** because redaction is irreversible, you cannot read back a real
-token to reproduce a failing call in curl. That was deliberate — a debug tool
-holding live credentials in memory is one careless screenshot away from leaking
-them. If you need the raw value, log it yourself at the call site.
+### Capture is asynchronous
 
----
+Completion handling runs on a single background thread, so a large payload never
+blocks your caller. The consequence: a request is not in the store the instant
+`onRequestSuccess` returns. This only matters if you read the store from code;
+the UI refreshes from a listener.
 
-## Notifications
+`onRequestStart` does format the request body on the calling thread, but
+pretty-printing is skipped above 64 KB so the cost stays bounded.
 
-An ongoing notification shows live request counts. Tapping it opens the
-inspector; the **Clear** action empties the captured list.
+### Notifications
 
-**You write no code for this.** `RequestListActivity` is declared in the
-library's own manifest, manifest merger pulls it into your app, and the library
-builds the `PendingIntent` itself.
+An ongoing notification shows live counts; tapping it opens the inspector, and
+**Clear** empties the list. **You write no code for this**, including the
+permission — on Android 13+ the library requests `POST_NOTIFICATIONS` itself the
+first time you open the inspector. Denying it costs you only the shortcut, and
+the resulting `SecurityException` is caught, so a denial can never crash your app.
 
-**Including the permission.** On Android 13+ `POST_NOTIFICATIONS` must be granted
-at runtime, not merely declared — the library requests it itself the first time
-you open the inspector UI. Deny it and everything still works; you lose only the
-notification shortcut. The library catches the resulting `SecurityException`, so
-a denial can never crash your app.
-
-Two limitations worth knowing:
-
-- **The notification only appears after the first request.** It is refreshed from
-  the request lifecycle and is not posted at `init()`.
-- **Clear dismisses it**, until the next request.
-
-Both are why you want the manual `NetworkInspector.launch(context)` entry point
-as the primary route.
-
----
-
-## Capture is asynchronous
-
-`onRequestSuccess` / `onRequestFailed` hand the expensive work — body
-formatting, storage, listener notification — to a single background thread, so
-the calling thread is never blocked on a large payload.
-
-The consequence: a request is **not** in the store the instant the completion
-call returns. Reading immediately after will miss it.
-
-```kotlin
-NetworkInspector.onRequestSuccess(id, 200, body)
-// ...not necessarily visible yet
-```
-
-This only matters if you are driving the inspector from code rather than reading
-the UI, which refreshes from a listener and is unaffected.
-
-One exception: `onRequestStart` formats the request body on the calling thread.
-Pretty-printing is skipped above 64 KB, so the cost stays bounded.
-
----
-
-## Stale in-flight requests
-
-The callback API depends on you calling `onRequestSuccess` / `onRequestFailed` /
-`onRequestCancelled`. When a path forgets, the request would otherwise sit in the
-in-flight map forever and permanently inflate the "N active" count.
-
-Requests with no completion call within `activeRequestTimeoutMs` (default 60s)
-are swept into `RequestStatus.TIMED_OUT` and counted as failed, so a missed
-callback surfaces as a visible entry rather than silently skewing the stats. Set
-the timeout to `0` to disable the sweep.
+Two limits: the notification appears only after the first request, and Clear
+dismisses it until the next one. Both are why you want a manual `launch()` entry
+point as the primary route.
 
 ---
 
 ## API surface and the parity contract
 
-Everything under `com.networkinspector.internal.*` is Kotlin-`internal` — the UI,
-the notification manager, the body formatter. It is an implementation detail and
-free to change. The public surface is deliberately small: about 24 entry points
-across `NetworkInspector`, `AnalyticsInspector`, `NetworkInspectorWrapper`, the
-two interceptors, and the models in `com.networkinspector.core`.
+Everything under `com.networkinspector.internal.*` is Kotlin-`internal` and free
+to change. The public surface is ~24 entry points across `NetworkInspector`,
+`AnalyticsInspector`, `NetworkInspectorWrapper`, the two interceptors, and the
+models in `com.networkinspector.core`.
 
-That matters because `library` and `library-no-op` must expose an **identical**
-public API. Consumers link one in debug and the other in release, so any drift
-breaks the consumer's *release* build. Every public member is one the no-op must
-mirror by hand.
-
+`library` and `library-no-op` must expose an **identical** public API — you link
+one in debug and the other in release, so drift breaks your *release* build.
 [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
-pins it:
+pins it, and CI additionally diffs the two `.api` files.
 
 ```bash
-./gradlew apiDump    # regenerate the checked-in *.api files after an API change
+./gradlew apiDump    # after any public API change; commit the result
 ./gradlew apiCheck   # fails if code and *.api have diverged
 ```
-
-CI additionally diffs `library/api/library.api` against
-`library-no-op/api/library-no-op.api` and fails if they differ. **After changing
-any public signature, run `apiDump` and commit the result.**
 
 ---
 
@@ -351,17 +455,15 @@ any public signature, run `apiDump` and commit the result.**
 ./gradlew testDebugUnitTest               # 35 unit tests
 ./gradlew apiCheck                        # public API unchanged
 ./gradlew :sample:assembleRelease         # proves both artifacts compile
-./gradlew publishToMavenLocal             # install locally for testing
+./gradlew publishToMavenLocal             # install locally
 ```
 
-Requires JDK 17+ and the Android SDK (compileSdk 35, build-tools 35.0.0). Point
-`local.properties` at it:
+Needs JDK 17+ and the Android SDK (compileSdk 35, build-tools 35.0.0):
 
 ```properties
+# local.properties
 sdk.dir=/path/to/android-sdk
 ```
-
-### Project layout
 
 ```
 library/           real implementation      → debugImplementation
@@ -373,17 +475,21 @@ sample/            consumer app; exercises every public entry point
 
 The sample is not decorative: it links `:library` in debug and `:library-no-op`
 in release and calls every public method, so `:sample:assembleRelease` fails if
-the two artifacts ever drift.
-
----
+the two ever drift.
 
 ## Contributing
 
 1. `./gradlew assembleDebug assembleRelease testDebugUnitTest :sample:assembleRelease`
-2. If you changed a public signature, mirror it in `library-no-op` **and** run
-   `./gradlew apiDump`, committing the updated `*.api` files.
+2. Changed a public signature? Mirror it in `library-no-op`, run
+   `./gradlew apiDump`, and commit the updated `*.api` files.
 3. Keep new implementation code under `com.networkinspector.internal.*` and
-   `internal`, so it stays out of the surface the no-op has to mirror.
+   `internal`, so it stays out of the surface the no-op must mirror.
+
+## Status
+
+Builds, tests and publishes; release stripping is verified in CI. **Not yet run
+on a physical device or emulator** — the UI layouts are correct-by-construction
+but have not been visually confirmed.
 
 ## License
 
