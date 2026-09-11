@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The inspector activities must not inherit the host app's theme: it may be
+      NoActionBar, a dialog theme, or use colors that render the inspector
+      unreadable. Pinning our own theme keeps the tool identical in every app it
+      is dropped into.
+    -->
+    <style name="Theme.NetworkInspector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/ni_accent</item>
+        <item name="android:windowBackground">@color/ni_background</item>
+    </style>
+</resources>

@@ -2,6 +2,7 @@ package com.networkinspector.interceptor
 
 import android.util.Log
 import com.networkinspector.NetworkInspector
+import com.networkinspector.core.NetworkInspectorConfig
 import com.networkinspector.internal.util.BodyFormatter
 import okhttp3.Headers
 import okhttp3.Interceptor
@@ -20,17 +21,30 @@ import java.nio.charset.StandardCharsets
  * and the original request/response flow is never interrupted.
  */
 class NetworkInspectorInterceptor @JvmOverloads constructor(
-    private val maxContentLength: Long = 250_000L,
-    private val headersToRedact: Set<String> = setOf("Authorization", "Cookie", "Set-Cookie")
+    /**
+     * Overrides [NetworkInspectorConfig.maxBodySize] for this interceptor only.
+     * Leave null -- the default -- so there is a single limit, set on the config.
+     */
+    private val maxContentLengthOverride: Long? = null,
+    /**
+     * Extra header names to redact on top of
+     * [NetworkInspectorConfig.redactedHeaders], which is applied centrally at
+     * capture and already covers the usual credential headers.
+     */
+    private val headersToRedact: Set<String> = emptySet()
 ) : Interceptor {
     
-    companion object {
+    private companion object {
         private const val TAG = "NetworkInspectorInterceptor"
         private const val CONTENT_TYPE = "Content-Type"
         private const val CONTENT_LENGTH = "Content-Length"
         private const val CONTENT_ENCODING = "Content-Encoding"
     }
     
+    private val maxContentLength: Long
+        get() = maxContentLengthOverride
+            ?: NetworkInspector.currentConfig().maxBodySize.toLong()
+
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()

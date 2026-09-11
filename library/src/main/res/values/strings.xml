@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ni_title_requests">Network Inspector</string>
+    <string name="ni_title_analytics">Analytics Inspector</string>
+    <string name="ni_search_hint">Search requests</string>
+    <string name="ni_search_events_hint">Search events</string>
+    <string name="ni_empty_requests">No requests captured yet</string>
+    <string name="ni_empty_events">No analytics events captured yet</string>
+</resources>

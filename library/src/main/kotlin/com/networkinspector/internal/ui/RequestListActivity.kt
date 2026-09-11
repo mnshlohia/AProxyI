@@ -282,6 +282,11 @@ private class RequestAdapter(
                     tvMethod.setTextColor(Color.parseColor("#9E9E9E"))
                     tvStatus.setTextColor(Color.parseColor("#9E9E9E"))
                 }
+                RequestStatus.TIMED_OUT -> {
+                    tvStatus.text = "⏱"
+                    tvMethod.setTextColor(Color.parseColor("#FF9800"))
+                    tvStatus.setTextColor(Color.parseColor("#FF9800"))
+                }
             }
             
             itemView.setOnClickListener { onClick(request) }

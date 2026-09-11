@@ -25,10 +25,16 @@ data class NetworkInspectorConfig(
     /** Custom notification channel name */
     val notificationChannelName: String = "Network Inspector",
 
-    /** Hosts to exclude from tracking (regex patterns) */
+    /**
+     * Regex patterns matched against the URL's **host only** (e.g. `analytics\\.`).
+     * A match excludes the request from tracking.
+     */
     val excludedHosts: List<String> = emptyList(),
 
-    /** Paths to exclude from tracking (regex patterns) */
+    /**
+     * Regex patterns matched against the URL's **path only**, excluding the
+     * query string (e.g. `^/health$`). A match excludes the request.
+     */
     val excludedPaths: List<String> = emptyList(),
 
     /**
@@ -119,9 +125,38 @@ data class NetworkInspectorConfig(
      */
     fun shouldTrack(url: String): Boolean {
         if (!enabled) return false
-        if (excludedHostRegexes.any { it.containsMatchIn(url) }) return false
-        if (excludedPathRegexes.any { it.containsMatchIn(url) }) return false
+
+        if (excludedHostRegexes.isNotEmpty()) {
+            val host = hostOf(url)
+            if (excludedHostRegexes.any { it.containsMatchIn(host) }) return false
+        }
+
+        if (excludedPathRegexes.isNotEmpty()) {
+            val path = pathOf(url)
+            if (excludedPathRegexes.any { it.containsMatchIn(path) }) return false
+        }
+
         return true
+    }
+
+    /**
+     * Host portion of [url], without scheme, path, query or credentials.
+     *
+     * Hand-parsed rather than via java.net.URI so that a malformed URL degrades
+     * to a best-effort string instead of throwing on the request path.
+     */
+    private fun hostOf(url: String): String {
+        val afterScheme = url.substringAfter("://", url)
+        val authority = afterScheme.substringBefore('/').substringBefore('?').substringBefore('#')
+        return authority.substringAfterLast('@').substringBefore(':')
+    }
+
+    /** Path portion of [url], without host, query or fragment. */
+    private fun pathOf(url: String): String {
+        val afterScheme = url.substringAfter("://", url)
+        val slash = afterScheme.indexOf('/')
+        if (slash < 0) return "/"
+        return afterScheme.substring(slash).substringBefore('?').substringBefore('#')
     }
 
     /** True when a header's value must never be stored. */

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prefixed ni_ so they cannot collide with the host app's colors when the
+         library's resources are merged into it. -->
+    <color name="ni_accent">#2962FF</color>
+    <color name="ni_success">#2E7D32</color>
+    <color name="ni_warning">#EF6C00</color>
+    <color name="ni_info">#616161</color>
+
+    <color name="ni_background">#FFFFFF</color>
+    <color name="ni_surface">#F5F5F5</color>
+    <color name="ni_text_primary">#212121</color>
+    <color name="ni_text_secondary">#757575</color>
+    <color name="ni_divider">#E0E0E0</color>
+</resources>

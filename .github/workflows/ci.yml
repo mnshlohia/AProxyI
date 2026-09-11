@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Assemble all modules
+        run: ./gradlew assembleDebug assembleRelease --stacktrace
+
+      # Fails if the code no longer matches the checked-in *.api files. Run
+      # `./gradlew apiDump` locally and commit the result after any API change.
+      - name: Check public API is unchanged
+        run: ./gradlew apiCheck --stacktrace
+
+      # The load-bearing invariant: consumers link :library in debug and
+      # :library-no-op in release, so the two must expose an identical surface.
+      # A difference here would break a consumer's *release* build.
+      - name: Check no-op mirrors library exactly
+        run: |
+          diff <(sort library/api/library.api) \
+               <(sort library-no-op/api/library-no-op.api) \
+            || { echo "::error::library and library-no-op public APIs have diverged"; exit 1; }
+
+      - name: Lint
+        run: ./gradlew :library:lintRelease --stacktrace
+
+  verify-release-is-stripped:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build the sample in both variants
+        run: ./gradlew :sample:assembleDebug :sample:assembleRelease --stacktrace
+
+      # Guards the central claim: a release build must contain no capture code,
+      # no inspector activities and no notification permission.
+      - name: Assert release APK contains no inspector implementation
+        run: |
+          APK=$(find sample/build/outputs/apk/release -name '*.apk' | head -1)
+          ANALYZER="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+
+          INTERNAL=$("$ANALYZER" dex packages --defined-only "$APK" \
+            | awk '$1=="C"' | grep -c 'com\.networkinspector\.internal' || true)
+          if [ "$INTERNAL" -ne 0 ]; then
+            echo "::error::release APK contains $INTERNAL com.networkinspector.internal classes"
+            exit 1
+          fi
+
+          MANIFEST=$("$ANALYZER" manifest print "$APK")
+          for FORBIDDEN in POST_NOTIFICATIONS networkinspector.internal.ui ClearRequestsReceiver; do
+            if echo "$MANIFEST" | grep -q "$FORBIDDEN"; then
+              echo "::error::release manifest contains $FORBIDDEN"
+              exit 1
+            fi
+          done
+
+          echo "Release APK is clean: no internal classes, no inspector components."

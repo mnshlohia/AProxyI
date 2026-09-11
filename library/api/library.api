@@ -1,0 +1,157 @@
+public final class com/networkinspector/AnalyticsInspector {
+	public static final field INSTANCE Lcom/networkinspector/AnalyticsInspector;
+	public static final fun clearAll ()V
+	public static final fun logEvent (Ljava/lang/String;Landroid/os/Bundle;Lcom/networkinspector/core/AnalyticsSource;)V
+	public static final fun logEvent (Ljava/lang/String;Ljava/util/Map;Lcom/networkinspector/core/AnalyticsSource;)V
+	public static synthetic fun logEvent$default (Ljava/lang/String;Landroid/os/Bundle;Lcom/networkinspector/core/AnalyticsSource;ILjava/lang/Object;)V
+	public static synthetic fun logEvent$default (Ljava/lang/String;Ljava/util/Map;Lcom/networkinspector/core/AnalyticsSource;ILjava/lang/Object;)V
+	public static final fun setEnabled (Z)V
+	public static final fun setLogToLogcat (Z)V
+}
+
+public final class com/networkinspector/NetworkInspector {
+	public static final field INSTANCE Lcom/networkinspector/NetworkInspector;
+	public static final fun clearAll ()V
+	public static final fun getAnalyticsLaunchIntent (Landroid/content/Context;)Landroid/content/Intent;
+	public static final fun getLaunchIntent (Landroid/content/Context;)Landroid/content/Intent;
+	public static final fun init (Landroid/content/Context;)V
+	public static final fun init (Landroid/content/Context;Lcom/networkinspector/core/NetworkInspectorConfig;)V
+	public static final fun isEnabled ()Z
+	public static final fun launch (Landroid/content/Context;)V
+	public static final fun launchAnalytics (Landroid/content/Context;)V
+	public static final fun onRequestCancelled (Ljava/lang/String;)V
+	public static final fun onRequestFailed (Ljava/lang/String;)V
+	public static final fun onRequestFailed (Ljava/lang/String;I)V
+	public static final fun onRequestFailed (Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun onRequestFailed$default (Ljava/lang/String;ILjava/lang/Object;ILjava/lang/Object;)V
+	public static final fun onRequestStart (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun onRequestStart (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun onRequestStart (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Ljava/lang/String;
+	public static final fun onRequestStart (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Ljava/lang/String;
+	public static final fun onRequestStart (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;)Ljava/lang/String;
+	public static final fun onRequestStart (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun onRequestStart$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+	public static final fun onRequestSuccess (Ljava/lang/String;)V
+	public static final fun onRequestSuccess (Ljava/lang/String;I)V
+	public static final fun onRequestSuccess (Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun onRequestSuccess (Ljava/lang/String;ILjava/lang/Object;Ljava/util/Map;)V
+	public static synthetic fun onRequestSuccess$default (Ljava/lang/String;ILjava/lang/Object;Ljava/util/Map;ILjava/lang/Object;)V
+}
+
+public final class com/networkinspector/NetworkInspectorWrapper {
+	public static final field INSTANCE Lcom/networkinspector/NetworkInspectorWrapper;
+	public static final fun clear ()V
+	public static final fun init (Landroid/content/Context;Lcom/networkinspector/core/NetworkInspectorConfig;)V
+	public static synthetic fun init$default (Landroid/content/Context;Lcom/networkinspector/core/NetworkInspectorConfig;ILjava/lang/Object;)V
+	public static final fun isEnabled ()Z
+	public static final fun launch (Landroid/content/Context;)V
+	public static final fun request ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public static final fun track (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static synthetic fun track$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun trackSuspend (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun trackSuspend$default (Lcom/networkinspector/NetworkInspectorWrapper;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun trackSuspendWithCode (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun trackSuspendWithCode$default (Lcom/networkinspector/NetworkInspectorWrapper;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun trackWithCode (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static synthetic fun trackWithCode$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/networkinspector/NetworkInspectorWrapper$RequestBuilder {
+	public fun <init> ()V
+	public final fun body (Ljava/lang/Object;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun delete ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun execute (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public final fun executeSuspend (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun get ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun header (Ljava/lang/String;Ljava/lang/String;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun headers (Ljava/util/Map;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun method (Ljava/lang/String;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun params (Ljava/util/Map;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun patch ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun post ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun put ()Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun start ()Lcom/networkinspector/NetworkInspectorWrapper$RequestTracker;
+	public final fun tag (Ljava/lang/String;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+	public final fun url (Ljava/lang/String;)Lcom/networkinspector/NetworkInspectorWrapper$RequestBuilder;
+}
+
+public final class com/networkinspector/NetworkInspectorWrapper$RequestTracker {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun cancelled ()V
+	public final fun failed ()V
+	public final fun failed (I)V
+	public final fun failed (ILjava/lang/Object;)V
+	public final fun failed (Ljava/lang/Throwable;)V
+	public static synthetic fun failed$default (Lcom/networkinspector/NetworkInspectorWrapper$RequestTracker;ILjava/lang/Object;ILjava/lang/Object;)V
+	public final fun success ()V
+	public final fun success (I)V
+	public final fun success (ILjava/lang/Object;)V
+	public final fun success (ILjava/lang/Object;Ljava/util/Map;)V
+	public static synthetic fun success$default (Lcom/networkinspector/NetworkInspectorWrapper$RequestTracker;ILjava/lang/Object;Ljava/util/Map;ILjava/lang/Object;)V
+}
+
+public final class com/networkinspector/interceptor/CallbackInterceptor {
+	public static final field Companion Lcom/networkinspector/interceptor/CallbackInterceptor$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun builder ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public static final fun create (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun getRequestId ()Ljava/lang/String;
+	public final fun onCancelled ()V
+	public final fun onFailure ()V
+	public final fun onFailure (I)V
+	public final fun onFailure (ILjava/lang/Object;)V
+	public static synthetic fun onFailure$default (Lcom/networkinspector/interceptor/CallbackInterceptor;ILjava/lang/Object;ILjava/lang/Object;)V
+	public final fun onSuccess ()V
+	public final fun onSuccess (I)V
+	public final fun onSuccess (ILjava/lang/Object;)V
+	public final fun onSuccess (ILjava/lang/Object;Ljava/util/Map;)V
+	public static synthetic fun onSuccess$default (Lcom/networkinspector/interceptor/CallbackInterceptor;ILjava/lang/Object;Ljava/util/Map;ILjava/lang/Object;)V
+}
+
+public final class com/networkinspector/interceptor/CallbackInterceptor$Builder {
+	public fun <init> ()V
+	public final fun addHeader (Ljava/lang/String;Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun baseUrl (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun body (Ljava/lang/Object;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun build ()Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun delete ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun get ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun headers (Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun method (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun params (Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun patch ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun post ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun put ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun tag (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun url (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+}
+
+public final class com/networkinspector/interceptor/CallbackInterceptor$Companion {
+	public final fun builder ()Lcom/networkinspector/interceptor/CallbackInterceptor$Builder;
+	public final fun create (Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun create (Ljava/lang/String;Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+	public static synthetic fun create$default (Lcom/networkinspector/interceptor/CallbackInterceptor$Companion;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lcom/networkinspector/interceptor/CallbackInterceptor;
+}
+
+public final class com/networkinspector/interceptor/CallbackInterceptorKt {
+	public static final fun trackRequest (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lkotlin/Pair;
+	public static synthetic fun trackRequest$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/Pair;
+}
+
+public final class com/networkinspector/interceptor/NetworkInspectorInterceptor : okhttp3/Interceptor {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Long;)V
+	public fun <init> (Ljava/lang/Long;Ljava/util/Set;)V
+	public synthetic fun <init> (Ljava/lang/Long;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun intercept (Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+}
+

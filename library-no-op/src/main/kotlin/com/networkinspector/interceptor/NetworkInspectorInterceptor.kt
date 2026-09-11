@@ -12,8 +12,8 @@ import java.io.IOException
  * nothing. The constructor parameters are kept only for signature parity.
  */
 class NetworkInspectorInterceptor @JvmOverloads constructor(
-    private val maxContentLength: Long = 250_000L,
-    private val headersToRedact: Set<String> = setOf("Authorization", "Cookie", "Set-Cookie")
+    private val maxContentLengthOverride: Long? = null,
+    private val headersToRedact: Set<String> = emptySet()
 ) : Interceptor {
 
     @Throws(IOException::class)

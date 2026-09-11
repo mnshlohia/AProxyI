@@ -109,6 +109,12 @@ internal class RequestDetailActivity : AppCompatActivity() {
                 binding.tvStatus.text = "⚠️ Cancelled"
                 binding.tvStatus.setTextColor(Color.parseColor("#9E9E9E"))
             }
+            RequestStatus.TIMED_OUT -> {
+                // No completion call arrived: almost always a caller that forgot
+                // onRequestSuccess/onRequestFailed, not a network timeout.
+                binding.tvStatus.text = "⏱ No completion call"
+                binding.tvStatus.setTextColor(Color.parseColor("#FF9800"))
+            }
         }
     }
     
@@ -180,25 +186,25 @@ internal class RequestDetailActivity : AppCompatActivity() {
             appendLine("  ${req.url}")
             appendLine()
             
-            if (!req.params.isNullOrEmpty()) {
+            req.params?.takeIf { it.isNotEmpty() }?.let { params ->
                 appendLine("▸ Query Parameters")
-                req.params.forEach { (key, value) ->
+                params.forEach { (key, value) ->
                     appendLine("  $key: $value")
                 }
                 appendLine()
             }
             
-            if (!req.headers.isNullOrEmpty()) {
+            req.headers?.takeIf { it.isNotEmpty() }?.let { headers ->
                 appendLine("▸ Headers")
-                req.headers.forEach { (key, value) ->
+                headers.forEach { (key, value) ->
                     appendLine("  $key: $value")
                 }
                 appendLine()
             }
             
-            if (!req.requestBody.isNullOrBlank()) {
+            req.requestBody?.takeIf { it.isNotBlank() }?.let { body ->
                 appendLine("▸ Body")
-                appendLine(formatJson(req.requestBody))
+                appendLine(formatJson(body))
             }
         }
         
@@ -222,9 +228,9 @@ internal class RequestDetailActivity : AppCompatActivity() {
             appendLine("  ${req.formattedDuration}")
             appendLine()
             
-            if (!req.responseHeaders.isNullOrEmpty()) {
+            req.responseHeaders?.takeIf { it.isNotEmpty() }?.let { headers ->
                 appendLine("▸ Headers")
-                req.responseHeaders.forEach { (key, value) ->
+                headers.forEach { (key, value) ->
                     appendLine("  $key: $value")
                 }
                 appendLine()
@@ -235,16 +241,16 @@ internal class RequestDetailActivity : AppCompatActivity() {
                 appendLine("  ${req.errorMessage}")
                 appendLine()
                 
-                if (!req.errorStackTrace.isNullOrBlank()) {
+                req.errorStackTrace?.takeIf { it.isNotBlank() }?.let { trace ->
                     appendLine("▸ Stack Trace")
-                    appendLine(req.errorStackTrace.take(3000))
+                    appendLine(trace.take(3000))
                     appendLine()
                 }
             }
             
-            if (!req.responseBody.isNullOrBlank()) {
+            req.responseBody?.takeIf { it.isNotBlank() }?.let { body ->
                 appendLine("▸ Body")
-                appendLine(formatJson(req.responseBody))
+                appendLine(formatJson(body))
             }
         }
         

@@ -58,7 +58,11 @@ object NetworkInspector {
     private var notificationManager: InspectorNotificationManager? = null
     
     // Request storage
-    private val requests = CopyOnWriteArrayList<NetworkRequest>()
+    // Guarded by synchronized(requests). A CopyOnWriteArrayList copied the whole
+    // backing array on the add(0, ...) and again on every trim removal -- two
+    // full copies of up to maxRequests entries per recorded request. Reads are
+    // snapshot copies taken under the same lock.
+    private val requests = ArrayDeque<NetworkRequest>()
     private val activeRequests = ConcurrentHashMap<String, NetworkRequest>()
     private val requestIdGenerator = AtomicLong(0)
     
@@ -355,26 +359,29 @@ object NetworkInspector {
     /**
      * Get all recorded requests (newest first)
      */
-    internal fun getRequests(): List<NetworkRequest> = requests.toList()
+    /** The active config, so collaborators do not invent their own limits. */
+    internal fun currentConfig(): NetworkInspectorConfig = config
+
+    internal fun getRequests(): List<NetworkRequest> = synchronized(requests) { requests.toList() }
     
     /**
      * Get requests filtered by status
      */
     internal fun getRequests(status: RequestStatus): List<NetworkRequest> = 
-        requests.filter { it.status == status }
+        synchronized(requests) { requests.filter { it.status == status } }
     
     /**
      * Get a specific request by ID
      */
     internal fun getRequest(id: String): NetworkRequest? = 
-        requests.find { it.id == id } ?: activeRequests[id]
+        synchronized(requests) { requests.find { it.id == id } } ?: activeRequests[id]
     
     /**
      * Search requests by URL or method
      */
     internal fun searchRequests(query: String): List<NetworkRequest> {
         val lowerQuery = query.lowercase()
-        return requests.filter { request ->
+        return synchronized(requests) { requests.toList() }.filter { request ->
             request.url.lowercase().contains(lowerQuery) ||
             request.method.lowercase().contains(lowerQuery) ||
             request.tag?.lowercase()?.contains(lowerQuery) == true
@@ -397,7 +404,7 @@ object NetworkInspector {
     @JvmStatic
     fun clearAll() {
         try {
-            requests.clear()
+            synchronized(requests) { requests.clear() }
             // The in-flight map and its counter were previously left behind, so
             // the active count survived a Clear and drifted permanently.
             activeRequests.clear()
@@ -482,10 +489,10 @@ object NetworkInspector {
         // IndexOutOfBoundsException out of a CopyOnWriteArrayList.
         synchronized(requests) {
             try {
-                requests.add(0, request)
+                requests.addFirst(request)
 
                 while (requests.size > config.maxRequests) {
-                    requests.removeAt(requests.size - 1)
+                    requests.removeLast()
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "Error storing request", e)

@@ -19,3 +19,4 @@ rootProject.name = "AProxyI"
 include(":library-api")
 include(":library")
 include(":library-no-op")
+include(":sample")

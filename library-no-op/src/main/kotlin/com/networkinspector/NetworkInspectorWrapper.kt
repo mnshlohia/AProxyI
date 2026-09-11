@@ -45,6 +45,22 @@ object NetworkInspectorWrapper {
         block: () -> Pair<Int, T>
     ): T = block().second
 
+    suspend inline fun <T> trackSuspend(
+        url: String,
+        method: String = "GET",
+        headers: Map<String, String>? = null,
+        body: Any? = null,
+        crossinline block: suspend () -> T
+    ): T = block()
+
+    suspend inline fun <T> trackSuspendWithCode(
+        url: String,
+        method: String = "GET",
+        headers: Map<String, String>? = null,
+        body: Any? = null,
+        crossinline block: suspend () -> Pair<Int, T>
+    ): T = block().second
+
     @JvmStatic
     fun clear() = NetworkInspector.clearAll()
 
