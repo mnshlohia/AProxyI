@@ -1,0 +1,74 @@
+name: Bug report
+description: Something does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check the [Troubleshooting table](https://github.com/mnshlohia/AProxyI#troubleshooting).
+        It covers the common ones: a release build that will not compile, a
+        notification that never appears, missing auth headers, requests stuck active.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      placeholder: |
+        1. Configure AProxyI with ...
+        2. Make a request via ...
+        3. Open the inspector
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Which build variant
+      options:
+        - debug (linking :library)
+        - release (linking :library-no-op)
+        - both
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: How are you capturing traffic
+      options:
+        - AProxyIInterceptor (OkHttp / Retrofit)
+        - Callback API (onRequestStart / onRequestSuccess)
+        - AProxyIWrapper (track / trackSuspend / builder)
+        - CallbackInterceptor
+        - Not capturing yet
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: AProxyI version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: android
+    attributes:
+      label: Android version and device
+      placeholder: "Android 13, Pixel 6"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Stack trace or logs
+      description: Redact anything sensitive first.
+      render: text

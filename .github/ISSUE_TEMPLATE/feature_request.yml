@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest an addition or a change
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: The debugging situation you are stuck in, not the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Design constraints
+      description: These are load-bearing. A change that breaks one is unlikely to land.
+      options:
+        - label: This does not put capture code, storage or UI into a release build
+        - label: This does not store credentials unredacted or write captures to disk
+        - label: If it adds public API, it can be mirrored in `:library-no-op`

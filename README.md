@@ -1,15 +1,42 @@
+<div align="center">
+
 # AProxyI
+
+**On-device network and analytics inspector for Android.**
+
+No laptop. No proxy. No CA certificate. No root.
 
 [![CI](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml/badge.svg)](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)](https://developer.android.com/about/versions/lollipop)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.0-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 
-Inspect every network request, response and analytics event **on the device
-itself** — no laptop, no proxy, no CA certificate, no root.
+</div>
 
-Because it runs inside your app, above the TLS layer, certificate pinning does
-not block it.
+---
 
-|                      | AProxyI                                    | Chucker                        |
+Inspect every request, response and analytics event from the phone itself.
+Because AProxyI runs inside your app, above the TLS layer, certificate pinning
+does not block it.
+
+## Features
+
+- **Works with any HTTP client.** The core is a callback API. Retrofit, OkHttp,
+  Ktor, Volley, `HttpURLConnection` — an OkHttp interceptor is provided, not required.
+- **Captures analytics events.** Firebase, CleverTap, AppsFlyer and Facebook
+  events in a dedicated screen, alongside network traffic.
+- **Secrets redacted by default.** Eight credential headers plus token-shaped
+  query parameters, scrubbed *at capture* so they never enter memory.
+- **Absent from release builds.** Not disabled — absent. A no-op artifact
+  replaces the real one, and CI pulls apart the APK to prove it every push.
+- **Full request detail.** Headers, bodies, timings, sizes, pretty-printed JSON,
+  copy-as-cURL, search and status filtering.
+- **Catches your mistakes.** A request you forget to complete surfaces as
+  `TIMED_OUT` instead of silently skewing the counts.
+
+## How it compares
+
+|                      | AProxyI                                             | Chucker                        |
 |----------------------|-----------------------------------------------------|--------------------------------|
 | HTTP client          | **Any** — callback API; OkHttp interceptor optional  | OkHttp only                    |
 | Analytics events     | **Yes** — Firebase, CleverTap, AppsFlyer, Facebook   | No                             |
@@ -17,7 +44,32 @@ not block it.
 | URL query redaction  | **Yes**                                              | No                             |
 | Storage              | **In memory only**                                   | Room, persisted to disk        |
 
----
+Staying in memory is a choice, not a gap: captured traffic holds live
+credentials, and disk persistence outlives the debugging session.
+
+## Contents
+
+**Getting started**
+&nbsp;&nbsp;[Quick start](#quick-start)
+· [The one thing to understand](#the-one-thing-to-understand)
+· [Installation](#installation)
+
+**Using it**
+&nbsp;&nbsp;[Integration recipes](#integration-recipes)
+· [Analytics events](#analytics-events)
+· [Configuration](#configuration)
+· [Best practices](#best-practices)
+· [Troubleshooting](#troubleshooting)
+
+**Understanding it**
+&nbsp;&nbsp;[How it works](#how-it-works)
+· [API surface and the parity contract](#api-surface-and-the-parity-contract)
+
+**Working on it**
+&nbsp;&nbsp;[Building](#building)
+· [Contributing](#contributing)
+· [Status](#status)
+· [License](#license)
 
 ## Quick start
 
@@ -479,17 +531,29 @@ the two ever drift.
 
 ## Contributing
 
-1. `./gradlew assembleDebug assembleRelease testDebugUnitTest :sample:assembleRelease`
-2. Changed a public signature? Mirror it in `library-no-op`, run
-   `./gradlew apiDump`, and commit the updated `*.api` files.
-3. Keep new implementation code under `com.aproxyi.internal.*` and
-   `internal`, so it stays out of the surface the no-op must mirror.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+the build commands, the API-parity rule that trips people up, and what a good
+change looks like here.
 
 ## Status
 
-Builds, tests and publishes; release stripping is verified in CI. **Not yet run
-on a physical device or emulator** — the UI layouts are correct-by-construction
-but have not been visually confirmed.
+**v0.1.0 — early, but verified.** Every push runs the full check on CI: build,
+46 unit tests, lint, the public-API parity diff, and an assertion against the
+real release APK that no capture code survives.
+
+| | |
+|---|---|
+| Builds, debug + release | Yes |
+| Unit tests | 46, including activity inflation under Robolectric |
+| Lint | Clean |
+| API parity enforced | Yes, in CI |
+| Release stripping proven | Yes, against the real APK |
+| Published to Maven Central | Not yet — `publishToMavenLocal` for now |
+| **Run on a physical device** | **Not yet** |
+
+That last row is the honest gap. The screens inflate, resolve every view id and
+bind their adapters under Robolectric, but nobody has judged how they *look* on
+real hardware. See [CHANGELOG.md](CHANGELOG.md) for what has landed.
 
 ## License
 
