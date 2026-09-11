@@ -14,26 +14,26 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:label="Network Inspector"
-            android:taskAffinity="com.networkinspector.inspector" />
+            android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.RequestDetailActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:taskAffinity="com.networkinspector.inspector" />
+            android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.AnalyticsListActivity"
             android:exported="false"
             android:excludeFromRecents="true"
             android:label="Analytics Inspector"
-            android:taskAffinity="com.networkinspector.inspector" />
+            android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.AnalyticsDetailActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:taskAffinity="com.networkinspector.inspector" />
+            android:taskAffinity="com.aproxyi.inspector" />
 
         <receiver
             android:name=".internal.notification.ClearRequestsReceiver"

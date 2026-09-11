@@ -6,7 +6,7 @@ plugins {
 
 
 android {
-    namespace = "com.networkinspector.api"
+    namespace = "com.aproxyi.api"
     compileSdk = 35
 
     defaultConfig { minSdk = 21 }

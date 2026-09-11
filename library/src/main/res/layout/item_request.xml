@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="13sp"
-            android:textColor="@color/ni_text_primary" />
+            android:textColor="@color/aproxyi_text_primary" />
 
         <TextView
             android:id="@+id/tvStatus"
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
     </LinearLayout>
 
     <TextView
@@ -48,7 +48,7 @@
         android:maxLines="2"
         android:ellipsize="middle"
         android:textSize="13sp"
-        android:textColor="@color/ni_text_primary" />
+        android:textColor="@color/aproxyi_text_primary" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -61,7 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
 
         <TextView
             android:id="@+id/tvSize"
@@ -70,6 +70,6 @@
             android:paddingStart="12dp"
             android:paddingEnd="0dp"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
     </LinearLayout>
 </LinearLayout>

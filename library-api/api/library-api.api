@@ -1,38 +1,5 @@
-public final class com/networkinspector/core/AnalyticsEvent {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/networkinspector/core/AnalyticsSource;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/networkinspector/core/AnalyticsSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/util/Map;
-	public final fun component4 ()J
-	public final fun component5 ()Lcom/networkinspector/core/AnalyticsSource;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/networkinspector/core/AnalyticsSource;)Lcom/networkinspector/core/AnalyticsEvent;
-	public static synthetic fun copy$default (Lcom/networkinspector/core/AnalyticsEvent;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/networkinspector/core/AnalyticsSource;ILjava/lang/Object;)Lcom/networkinspector/core/AnalyticsEvent;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getEventName ()Ljava/lang/String;
-	public final fun getFormattedTime ()Ljava/lang/String;
-	public final fun getId ()Ljava/lang/String;
-	public final fun getParams ()Ljava/util/Map;
-	public final fun getParamsCount ()I
-	public final fun getSource ()Lcom/networkinspector/core/AnalyticsSource;
-	public final fun getTimestamp ()J
-	public fun hashCode ()I
-	public final fun matchesSearch (Ljava/lang/String;)Z
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/networkinspector/core/AnalyticsSource : java/lang/Enum {
-	public static final field APPSFLYER Lcom/networkinspector/core/AnalyticsSource;
-	public static final field CLEVERTAP Lcom/networkinspector/core/AnalyticsSource;
-	public static final field FACEBOOK Lcom/networkinspector/core/AnalyticsSource;
-	public static final field FIREBASE Lcom/networkinspector/core/AnalyticsSource;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lcom/networkinspector/core/AnalyticsSource;
-	public static fun values ()[Lcom/networkinspector/core/AnalyticsSource;
-}
-
-public final class com/networkinspector/core/NetworkInspectorConfig {
-	public static final field Companion Lcom/networkinspector/core/NetworkInspectorConfig$Companion;
+public final class com/aproxyi/core/AProxyIConfig {
+	public static final field Companion Lcom/aproxyi/core/AProxyIConfig$Companion;
 	public static final field REDACTED Ljava/lang/String;
 	public fun <init> ()V
 	public fun <init> (ZZIIZLjava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;J)V
@@ -48,8 +15,8 @@ public final class com/networkinspector/core/NetworkInspectorConfig {
 	public final fun component7 ()Ljava/util/List;
 	public final fun component8 ()Ljava/util/List;
 	public final fun component9 ()Ljava/util/Set;
-	public final fun copy (ZZIIZLjava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;J)Lcom/networkinspector/core/NetworkInspectorConfig;
-	public static synthetic fun copy$default (Lcom/networkinspector/core/NetworkInspectorConfig;ZZIIZLjava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;JILjava/lang/Object;)Lcom/networkinspector/core/NetworkInspectorConfig;
+	public final fun copy (ZZIIZLjava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;J)Lcom/aproxyi/core/AProxyIConfig;
+	public static synthetic fun copy$default (Lcom/aproxyi/core/AProxyIConfig;ZZIIZLjava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;JILjava/lang/Object;)Lcom/aproxyi/core/AProxyIConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActiveRequestTimeoutMs ()J
 	public final fun getEnabled ()Z
@@ -72,19 +39,52 @@ public final class com/networkinspector/core/NetworkInspectorConfig {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/networkinspector/core/NetworkInspectorConfig$Companion {
-	public final fun getDEBUG ()Lcom/networkinspector/core/NetworkInspectorConfig;
+public final class com/aproxyi/core/AProxyIConfig$Companion {
+	public final fun getDEBUG ()Lcom/aproxyi/core/AProxyIConfig;
 	public final fun getDEFAULT_REDACTED_HEADERS ()Ljava/util/Set;
 	public final fun getDEFAULT_REDACTED_QUERY_PARAMS ()Ljava/util/Set;
-	public final fun getRELEASE ()Lcom/networkinspector/core/NetworkInspectorConfig;
+	public final fun getRELEASE ()Lcom/aproxyi/core/AProxyIConfig;
 	public final fun getSENSITIVE_QUERY_FRAGMENTS ()Ljava/util/List;
 }
 
-public final class com/networkinspector/core/NetworkRequest {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/networkinspector/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/networkinspector/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/aproxyi/core/AnalyticsEvent {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/aproxyi/core/AnalyticsSource;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/aproxyi/core/AnalyticsSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Lcom/networkinspector/core/RequestStatus;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()J
+	public final fun component5 ()Lcom/aproxyi/core/AnalyticsSource;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/aproxyi/core/AnalyticsSource;)Lcom/aproxyi/core/AnalyticsEvent;
+	public static synthetic fun copy$default (Lcom/aproxyi/core/AnalyticsEvent;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;JLcom/aproxyi/core/AnalyticsSource;ILjava/lang/Object;)Lcom/aproxyi/core/AnalyticsEvent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEventName ()Ljava/lang/String;
+	public final fun getFormattedTime ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getParams ()Ljava/util/Map;
+	public final fun getParamsCount ()I
+	public final fun getSource ()Lcom/aproxyi/core/AnalyticsSource;
+	public final fun getTimestamp ()J
+	public fun hashCode ()I
+	public final fun matchesSearch (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/aproxyi/core/AnalyticsSource : java/lang/Enum {
+	public static final field APPSFLYER Lcom/aproxyi/core/AnalyticsSource;
+	public static final field CLEVERTAP Lcom/aproxyi/core/AnalyticsSource;
+	public static final field FACEBOOK Lcom/aproxyi/core/AnalyticsSource;
+	public static final field FIREBASE Lcom/aproxyi/core/AnalyticsSource;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/aproxyi/core/AnalyticsSource;
+	public static fun values ()[Lcom/aproxyi/core/AnalyticsSource;
+}
+
+public final class com/aproxyi/core/NetworkRequest {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/aproxyi/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/aproxyi/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Lcom/aproxyi/core/RequestStatus;
 	public final fun component11 ()Ljava/lang/Integer;
 	public final fun component12 ()Ljava/lang/String;
 	public final fun component13 ()Ljava/util/Map;
@@ -99,8 +99,8 @@ public final class com/networkinspector/core/NetworkRequest {
 	public final fun component7 ()J
 	public final fun component8 ()Ljava/lang/Long;
 	public final fun component9 ()Ljava/lang/Long;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/networkinspector/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/networkinspector/core/NetworkRequest;
-	public static synthetic fun copy$default (Lcom/networkinspector/core/NetworkRequest;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/networkinspector/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/networkinspector/core/NetworkRequest;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/aproxyi/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/aproxyi/core/NetworkRequest;
+	public static synthetic fun copy$default (Lcom/aproxyi/core/NetworkRequest;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;JLjava/lang/Long;Ljava/lang/Long;Lcom/aproxyi/core/RequestStatus;Ljava/lang/Integer;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/aproxyi/core/NetworkRequest;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDuration ()Ljava/lang/Long;
 	public final fun getEndTime ()Ljava/lang/Long;
@@ -123,21 +123,21 @@ public final class com/networkinspector/core/NetworkRequest {
 	public final fun getResponseSize ()Ljava/lang/String;
 	public final fun getShortName ()Ljava/lang/String;
 	public final fun getStartTime ()J
-	public final fun getStatus ()Lcom/networkinspector/core/RequestStatus;
+	public final fun getStatus ()Lcom/aproxyi/core/RequestStatus;
 	public final fun getTag ()Ljava/lang/String;
 	public final fun getUrl ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/networkinspector/core/RequestStats {
+public final class com/aproxyi/core/RequestStats {
 	public fun <init> (IIII)V
 	public final fun component1 ()I
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()I
-	public final fun copy (IIII)Lcom/networkinspector/core/RequestStats;
-	public static synthetic fun copy$default (Lcom/networkinspector/core/RequestStats;IIIIILjava/lang/Object;)Lcom/networkinspector/core/RequestStats;
+	public final fun copy (IIII)Lcom/aproxyi/core/RequestStats;
+	public static synthetic fun copy$default (Lcom/aproxyi/core/RequestStats;IIIIILjava/lang/Object;)Lcom/aproxyi/core/RequestStats;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActive ()I
 	public final fun getCompleted ()I
@@ -148,14 +148,14 @@ public final class com/networkinspector/core/RequestStats {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/networkinspector/core/RequestStatus : java/lang/Enum {
-	public static final field CANCELLED Lcom/networkinspector/core/RequestStatus;
-	public static final field FAILED Lcom/networkinspector/core/RequestStatus;
-	public static final field IN_PROGRESS Lcom/networkinspector/core/RequestStatus;
-	public static final field SUCCESS Lcom/networkinspector/core/RequestStatus;
-	public static final field TIMED_OUT Lcom/networkinspector/core/RequestStatus;
+public final class com/aproxyi/core/RequestStatus : java/lang/Enum {
+	public static final field CANCELLED Lcom/aproxyi/core/RequestStatus;
+	public static final field FAILED Lcom/aproxyi/core/RequestStatus;
+	public static final field IN_PROGRESS Lcom/aproxyi/core/RequestStatus;
+	public static final field SUCCESS Lcom/aproxyi/core/RequestStatus;
+	public static final field TIMED_OUT Lcom/aproxyi/core/RequestStatus;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lcom/networkinspector/core/RequestStatus;
-	public static fun values ()[Lcom/networkinspector/core/RequestStatus;
+	public static fun valueOf (Ljava/lang/String;)Lcom/aproxyi/core/RequestStatus;
+	public static fun values ()[Lcom/aproxyi/core/RequestStatus;
 }
 

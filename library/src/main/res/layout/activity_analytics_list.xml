@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/ni_background">
+    android:background="@color/aproxyi_background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/ni_accent"
-        app:title="@string/ni_title_analytics"
+        android:background="@color/aproxyi_accent"
+        app:title="@string/aproxyi_title_analytics"
         app:titleTextColor="#FFFFFF"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
@@ -22,12 +22,12 @@
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="8dp"
-        android:hint="@string/ni_search_events_hint"
+        android:hint="@string/aproxyi_search_events_hint"
         android:inputType="text"
         android:imeOptions="actionSearch"
         android:maxLines="1"
         android:importantForAutofill="no"
-        android:textColor="@color/ni_text_primary" />
+        android:textColor="@color/aproxyi_text_primary" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -92,7 +92,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="12sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
 
         <TextView
             android:id="@+id/tvClear"
@@ -103,7 +103,7 @@
             android:paddingEnd="8dp"
             android:text="CLEAR"
             android:textStyle="bold"
-            android:textColor="@color/ni_accent" />
+            android:textColor="@color/aproxyi_accent" />
     </LinearLayout>
 
     <FrameLayout
@@ -122,7 +122,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/ni_empty_events"
-            android:textColor="@color/ni_text_secondary" />
+            android:text="@string/aproxyi_empty_events"
+            android:textColor="@color/aproxyi_text_secondary" />
     </FrameLayout>
 </LinearLayout>

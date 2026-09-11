@@ -6,7 +6,7 @@ plugins {
 
 
 android {
-    namespace = "com.networkinspector.noop"
+    namespace = "com.aproxyi.noop"
     compileSdk = 35
 
     defaultConfig { minSdk = 21 }

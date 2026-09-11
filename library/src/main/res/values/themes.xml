@@ -6,8 +6,8 @@
       unreadable. Pinning our own theme keeps the tool identical in every app it
       is dropped into.
     -->
-    <style name="Theme.NetworkInspector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/ni_accent</item>
-        <item name="android:windowBackground">@color/ni_background</item>
+    <style name="Theme.AProxyI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/aproxyi_accent</item>
+        <item name="android:windowBackground">@color/aproxyi_background</item>
     </style>
 </resources>

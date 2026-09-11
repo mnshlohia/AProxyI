@@ -79,14 +79,14 @@ jobs:
           ANALYZER="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
 
           INTERNAL=$("$ANALYZER" dex packages --defined-only "$APK" \
-            | awk '$1=="C"' | grep -c 'com\.networkinspector\.internal' || true)
+            | awk '$1=="C"' | grep -c 'com\.aproxyi\.internal' || true)
           if [ "$INTERNAL" -ne 0 ]; then
-            echo "::error::release APK contains $INTERNAL com.networkinspector.internal classes"
+            echo "::error::release APK contains $INTERNAL com.aproxyi.internal classes"
             exit 1
           fi
 
           MANIFEST=$("$ANALYZER" manifest print "$APK")
-          for FORBIDDEN in POST_NOTIFICATIONS networkinspector.internal.ui ClearRequestsReceiver; do
+          for FORBIDDEN in POST_NOTIFICATIONS aproxyi.internal.ui ClearRequestsReceiver; do
             if echo "$MANIFEST" | grep -q "$FORBIDDEN"; then
               echo "::error::release manifest contains $FORBIDDEN"
               exit 1

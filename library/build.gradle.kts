@@ -6,7 +6,7 @@ plugins {
 
 
 android {
-    namespace = "com.networkinspector"
+    namespace = "com.aproxyi"
     compileSdk = 35
 
     defaultConfig {
@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.gson)
 
-    // compileOnly: NetworkInspectorInterceptor is optional. Consumers that do
+    // compileOnly: AProxyIInterceptor is optional. Consumers that do
     // not use OkHttp never get it pulled in, and those that do keep their own
     // version rather than having this library force one.
     compileOnly(libs.okhttp)

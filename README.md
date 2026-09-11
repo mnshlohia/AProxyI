@@ -1,4 +1,4 @@
-# NetworkInspector
+# AProxyI
 
 [![CI](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml/badge.svg)](https://github.com/mnshlohia/AProxyI/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -9,7 +9,7 @@ itself** — no laptop, no proxy, no CA certificate, no root.
 Because it runs inside your app, above the TLS layer, certificate pinning does
 not block it.
 
-|                      | NetworkInspector                                    | Chucker                        |
+|                      | AProxyI                                    | Chucker                        |
 |----------------------|-----------------------------------------------------|--------------------------------|
 | HTTP client          | **Any** — callback API; OkHttp interceptor optional  | OkHttp only                    |
 | Analytics events     | **Yes** — Firebase, CleverTap, AppsFlyer, Facebook   | No                             |
@@ -26,8 +26,8 @@ not block it.
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    debugImplementation("io.github.mnshlohia.networkinspector:library:0.1.0")
-    releaseImplementation("io.github.mnshlohia.networkinspector:library-no-op:0.1.0")
+    debugImplementation("io.github.mnshlohia.aproxyi:library:0.1.0")
+    releaseImplementation("io.github.mnshlohia.aproxyi:library-no-op:0.1.0")
 }
 ```
 
@@ -37,7 +37,7 @@ dependencies {
 class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        NetworkInspector.init(this)
+        AProxyI.init(this)
     }
 }
 ```
@@ -47,14 +47,14 @@ class MyApp : Application() {
 ```kotlin
 val client = OkHttpClient.Builder()
     .addInterceptor(authInterceptor)
-    .addInterceptor(NetworkInspectorInterceptor())   // add LAST — see below
+    .addInterceptor(AProxyIInterceptor())   // add LAST — see below
     .build()
 ```
 
 **4. Open it.** Wire this to a debug menu item, long-press, or shake gesture:
 
 ```kotlin
-NetworkInspector.launch(context)
+AProxyI.launch(context)
 ```
 
 That's the whole integration. There is also an ongoing notification you can tap.
@@ -71,7 +71,7 @@ implementation; in release you link hollow stubs where every method is empty. So
 this line:
 
 ```kotlin
-NetworkInspector.init(this)
+AProxyI.init(this)
 ```
 
 compiles in both variants and does nothing in release. The release APK contains
@@ -79,21 +79,21 @@ no capture code at all — not disabled, **absent**.
 
 ```kotlin
 // Correct — plain code in the main source set
-NetworkInspector.init(this)
-NetworkInspector.launch(context)
+AProxyI.init(this)
+AProxyI.launch(context)
 
 // Unnecessary — the no-op already handles this
-if (BuildConfig.DEBUG) { NetworkInspector.init(this) }
+if (BuildConfig.DEBUG) { AProxyI.init(this) }
 ```
 
 The only thing you may want to guard is your *entry point UI* — a "Developer
 tools" menu item — since in release it would open nothing.
 
 ```kotlin
-// NetworkInspector.isEnabled() is false in release builds
-if (NetworkInspector.isEnabled()) {
+// AProxyI.isEnabled() is false in release builds
+if (AProxyI.isEnabled()) {
     menu.add("Network Inspector").setOnMenuItemClickListener {
-        NetworkInspector.launch(this); true
+        AProxyI.launch(this); true
     }
 }
 ```
@@ -124,8 +124,8 @@ dependencyResolutionManagement {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    debugImplementation("io.github.mnshlohia.networkinspector:library:0.1.0")
-    releaseImplementation("io.github.mnshlohia.networkinspector:library-no-op:0.1.0")
+    debugImplementation("io.github.mnshlohia.aproxyi:library:0.1.0")
+    releaseImplementation("io.github.mnshlohia.aproxyi:library-no-op:0.1.0")
 }
 ```
 
@@ -146,7 +146,7 @@ Pick the one matching your networking layer. You only need one.
 ```kotlin
 val client = OkHttpClient.Builder()
     .addInterceptor(authInterceptor)
-    .addInterceptor(NetworkInspectorInterceptor())
+    .addInterceptor(AProxyIInterceptor())
     .build()
 
 val retrofit = Retrofit.Builder()
@@ -171,7 +171,7 @@ Most people want it **last**.
 
 ```kotlin
 suspend fun fetchOrders(): List<Order> =
-    NetworkInspectorWrapper.trackSuspend("$BASE_URL/orders") {
+    AProxyIWrapper.trackSuspend("$BASE_URL/orders") {
         api.getOrders()
     }
 ```
@@ -184,7 +184,7 @@ Use the callback API. Call `onRequestStart`, keep the returned id, then call
 **exactly one** completion method.
 
 ```kotlin
-val id = NetworkInspector.onRequestStart(
+val id = AProxyI.onRequestStart(
     url = url,
     method = "POST",
     headers = headers,
@@ -194,9 +194,9 @@ val id = NetworkInspector.onRequestStart(
 
 try {
     val response = client.execute(request)
-    NetworkInspector.onRequestSuccess(id, response.code, response.body, response.headers)
+    AProxyI.onRequestSuccess(id, response.code, response.body, response.headers)
 } catch (e: IOException) {
-    NetworkInspector.onRequestFailed(id, 0, e)
+    AProxyI.onRequestFailed(id, 0, e)
 }
 ```
 
@@ -207,12 +207,12 @@ try {
 ### Blocking calls — let the wrapper do it
 
 ```kotlin
-val result = NetworkInspectorWrapper.track("$BASE_URL/profile") {
+val result = AProxyIWrapper.track("$BASE_URL/profile") {
     api.getProfile()          // success and failure recorded automatically
 }
 
 // When you have a status code to report
-val body = NetworkInspectorWrapper.trackWithCode("$BASE_URL/profile") {
+val body = AProxyIWrapper.trackWithCode("$BASE_URL/profile") {
     val r = api.getProfile()
     r.code to r.body
 }
@@ -221,7 +221,7 @@ val body = NetworkInspectorWrapper.trackWithCode("$BASE_URL/profile") {
 ### Builder style
 
 ```kotlin
-NetworkInspectorWrapper.request()
+AProxyIWrapper.request()
     .url("$BASE_URL/orders")
     .post()
     .header("X-Request-Id", requestId)
@@ -275,9 +275,9 @@ overload and a `Map<String, Any?>` overload.
 AnalyticsInspector.logEvent("add_to_cart", mapOf("sku" to sku, "qty" to 2))
 ```
 
-View them with `NetworkInspector.launchAnalytics(context)`.
+View them with `AProxyI.launchAnalytics(context)`.
 
-`NetworkInspector.init()` drives `AnalyticsInspector` too — you do not enable it
+`AProxyI.init()` drives `AnalyticsInspector` too — you do not enable it
 separately.
 
 ---
@@ -285,14 +285,14 @@ separately.
 ## Configuration
 
 ```kotlin
-NetworkInspector.init(
+AProxyI.init(
     this,
-    NetworkInspectorConfig(
+    AProxyIConfig(
         maxRequests = 500,
         maxBodySize = 200_000,
         excludedHosts = listOf("""firebase\.""", """crashlytics\."""),
         excludedPaths = listOf("^/health$", "^/ping$"),
-        redactedHeaders = NetworkInspectorConfig.DEFAULT_REDACTED_HEADERS + "X-Internal-Sig",
+        redactedHeaders = AProxyIConfig.DEFAULT_REDACTED_HEADERS + "X-Internal-Sig",
         activeRequestTimeoutMs = 60_000L
     )
 )
@@ -312,8 +312,8 @@ NetworkInspector.init(
 | `redactedQueryParams` | see below | Query names whose values are replaced. |
 | `activeRequestTimeoutMs` | `60_000` | Sweep in-flight requests after this. `0` disables. |
 
-Presets: `NetworkInspectorConfig.DEBUG` (everything on) and
-`NetworkInspectorConfig.RELEASE` (everything off).
+Presets: `AProxyIConfig.DEBUG` (everything on) and
+`AProxyIConfig.RELEASE` (everything off).
 
 `excludedHosts` and `excludedPaths` really do scope to host and path — an
 `excludedHosts` pattern will not match the same text appearing in a path.
@@ -350,7 +350,7 @@ Presets: `NetworkInspectorConfig.DEBUG` (everything on) and
 | Symptom | Cause and fix |
 |---|---|
 | Release build fails to compile | Missing the `releaseImplementation(...library-no-op...)` line. |
-| Nothing is captured | `init()` never ran, or `enabled = false`. Check `NetworkInspector.isEnabled()`. |
+| Nothing is captured | `init()` never ran, or `enabled = false`. Check `AProxyI.isEnabled()`. |
 | Notification never appears | `POST_NOTIFICATIONS` was denied on Android 13+, or no request has been made yet — the notification is posted from the request lifecycle, not from `init()`. Use `launch()` instead. |
 | Auth headers missing from captures | The inspector interceptor runs before your auth interceptor. Add it last. |
 | Requests stuck as "active" | A completion call is missing on some path. They now appear as `TIMED_OUT` after 60s — that entry tells you which call site to fix. |
@@ -383,7 +383,7 @@ code in the APK relying on R8 to strip it.
 
 | | Debug | Release |
 |---|---|---|
-| `com.networkinspector.internal` classes | 54 | **0** |
+| `com.aproxyi.internal` classes | 54 | **0** |
 | Inspector activities in merged manifest | 4 | **0** |
 | `POST_NOTIFICATIONS` permission | yes | **no** |
 | APK size | 6.5 MB | 2.9 MB |
@@ -431,10 +431,10 @@ point as the primary route.
 
 ## API surface and the parity contract
 
-Everything under `com.networkinspector.internal.*` is Kotlin-`internal` and free
-to change. The public surface is ~24 entry points across `NetworkInspector`,
-`AnalyticsInspector`, `NetworkInspectorWrapper`, the two interceptors, and the
-models in `com.networkinspector.core`.
+Everything under `com.aproxyi.internal.*` is Kotlin-`internal` and free
+to change. The public surface is ~24 entry points across `AProxyI`,
+`AnalyticsInspector`, `AProxyIWrapper`, the two interceptors, and the
+models in `com.aproxyi.core`.
 
 `library` and `library-no-op` must expose an **identical** public API — you link
 one in debug and the other in release, so drift breaks your *release* build.
@@ -482,7 +482,7 @@ the two ever drift.
 1. `./gradlew assembleDebug assembleRelease testDebugUnitTest :sample:assembleRelease`
 2. Changed a public signature? Mirror it in `library-no-op`, run
    `./gradlew apiDump`, and commit the updated `*.api` files.
-3. Keep new implementation code under `com.networkinspector.internal.*` and
+3. Keep new implementation code under `com.aproxyi.internal.*` and
    `internal`, so it stays out of the surface the no-op must mirror.
 
 ## Status

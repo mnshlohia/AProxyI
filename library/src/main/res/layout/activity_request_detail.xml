@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/ni_background">
+    android:background="@color/aproxyi_background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/ni_accent"
+        android:background="@color/aproxyi_accent"
         app:titleTextColor="#FFFFFF"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@color/ni_surface">
+        android:background="@color/aproxyi_surface">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textColor="@color/ni_text_primary" />
+                android:textColor="@color/aproxyi_text_primary" />
 
             <TextView
                 android:id="@+id/tvStatus"
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="@color/ni_text_secondary" />
+                android:textColor="@color/aproxyi_text_secondary" />
         </LinearLayout>
 
         <TextView
@@ -57,7 +57,7 @@
             android:paddingTop="4dp"
             android:textIsSelectable="true"
             android:textSize="13sp"
-            android:textColor="@color/ni_text_primary" />
+            android:textColor="@color/aproxyi_text_primary" />
 
         <TextView
             android:id="@+id/tvTime"
@@ -65,14 +65,14 @@
             android:layout_height="wrap_content"
             android:paddingTop="2dp"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/ni_background">
+        android:background="@color/aproxyi_background">
 
         <TextView
             android:id="@+id/tabOverview"
@@ -84,7 +84,7 @@
             android:background="?attr/selectableItemBackground"
             android:text="Overview"
             android:textStyle="bold"
-            android:textColor="@color/ni_accent" />
+            android:textColor="@color/aproxyi_accent" />
 
         <TextView
             android:id="@+id/tabRequest"
@@ -96,7 +96,7 @@
             android:background="?attr/selectableItemBackground"
             android:text="Request"
             android:textStyle="bold"
-            android:textColor="@color/ni_accent" />
+            android:textColor="@color/aproxyi_accent" />
 
         <TextView
             android:id="@+id/tabResponse"
@@ -108,13 +108,13 @@
             android:background="?attr/selectableItemBackground"
             android:text="Response"
             android:textStyle="bold"
-            android:textColor="@color/ni_accent" />
+            android:textColor="@color/aproxyi_accent" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/ni_divider" />
+        android:background="@color/aproxyi_divider" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -133,7 +133,7 @@
                 android:fontFamily="monospace"
                 android:textIsSelectable="true"
                 android:textSize="12sp"
-                android:textColor="@color/ni_text_primary" />
+                android:textColor="@color/aproxyi_text_primary" />
         </HorizontalScrollView>
     </ScrollView>
 </LinearLayout>

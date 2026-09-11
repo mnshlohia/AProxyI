@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="11sp"
-            android:textColor="@color/ni_accent" />
+            android:textColor="@color/aproxyi_accent" />
 
         <TextView
             android:id="@+id/tvParamsCount"
@@ -30,14 +30,14 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
 
         <TextView
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:textColor="@color/ni_text_secondary" />
+            android:textColor="@color/aproxyi_text_secondary" />
     </LinearLayout>
 
     <TextView
@@ -47,7 +47,7 @@
         android:paddingTop="2dp"
         android:textStyle="bold"
         android:textSize="14sp"
-        android:textColor="@color/ni_text_primary" />
+        android:textColor="@color/aproxyi_text_primary" />
 
     <TextView
         android:id="@+id/tvParamsPreview"
@@ -57,5 +57,5 @@
         android:maxLines="2"
         android:ellipsize="end"
         android:textSize="12sp"
-        android:textColor="@color/ni_text_secondary" />
+        android:textColor="@color/aproxyi_text_secondary" />
 </LinearLayout>

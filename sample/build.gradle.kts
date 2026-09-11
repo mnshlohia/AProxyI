@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.networkinspector.sample"
+    namespace = "com.aproxyi.sample"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.networkinspector.sample"
+        applicationId = "com.aproxyi.sample"
         minSdk = 21
         targetSdk = 35
         versionCode = 1

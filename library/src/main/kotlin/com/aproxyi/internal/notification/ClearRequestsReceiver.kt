@@ -1,0 +1,20 @@
+package com.aproxyi.internal.notification
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import com.aproxyi.AProxyI
+
+/**
+ * BroadcastReceiver to handle clearing requests from notification action.
+ */
+internal class ClearRequestsReceiver : BroadcastReceiver() {
+    
+    override fun onReceive(context: Context, intent: Intent?) {
+        AProxyI.clearAll()
+    }
+}
+
+
+
+
