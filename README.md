@@ -169,6 +169,49 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 Both are why you want the manual `NetworkInspector.launch(context)` entry point
 above rather than relying on the notification alone.
 
+## Redaction
+
+Sensitive values are redacted **at capture, irreversibly** — they never enter the
+in-memory store, so they cannot escape through the inspector UI, the share
+action, or copy-as-cURL. This applies to the callback API and the OkHttp
+interceptor alike.
+
+Redacted by default:
+
+- **Headers** — `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`,
+  `X-Api-Key`, `X-Auth-Token`, `X-Access-Token`, `X-Csrf-Token`
+- **URL query parameters and `params`** — names matching `key`, `sid`, `sig`,
+  `otp`, `pin` exactly, or *containing* `token`, `secret`, `password`, `passwd`,
+  `pwd`, `auth`, `signature`, `session`, `apikey`, `api_key`, `credential`. That
+  covers `access_token`, `oauth_token` and `client_secret` without enumerating
+  every vendor spelling.
+
+```kotlin
+NetworkInspector.init(
+    this,
+    NetworkInspectorConfig.DEBUG.copy(
+        redactedHeaders = NetworkInspectorConfig.DEFAULT_REDACTED_HEADERS + "X-Internal-Sig",
+        redactedQueryParams = NetworkInspectorConfig.DEFAULT_REDACTED_QUERY_PARAMS + "uid"
+    )
+)
+```
+
+**The tradeoff:** because redaction is irreversible, you cannot read back a real
+token to reproduce a failing call in curl. That was a deliberate choice — a
+debug tool holding live credentials in memory is one careless screenshot away
+from leaking them. If you need the raw value, log it yourself at the call site.
+
+## Stale in-flight requests
+
+The callback API relies on you calling `onRequestSuccess` / `onRequestFailed`.
+When a path forgets to, the request would otherwise sit in the in-flight map
+forever and permanently inflate the "N active" count in the notification.
+
+Requests with no completion call within `activeRequestTimeoutMs` (default 60s)
+are therefore swept into `RequestStatus.TIMED_OUT` and counted as failed, so a
+missed callback shows up as a visible entry instead of silently skewing the
+stats. Set the timeout to `0` to disable the sweep.
+
 ## The parity contract
 
 `:library` and `:library-no-op` must expose exactly the same public signatures.
@@ -191,8 +234,9 @@ Early. Known gaps:
   `item_analytics_event`; the menus `menu_request_list`, `menu_request_detail`;
   the colors `ni_accent`, `ni_success`, `ni_warning`, `ni_info`; and the drawable
   `ic_network_inspector`.
-- **Known defects.** See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — 17 open issues,
-  including three credential-leak paths and two crash risks.
+- **Known defects.** See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — 3 open, 14 fixed.
+- **Nothing has been compiled.** The fixes were written without an Android SDK
+  available, so they are unverified.
 - No Gradle wrapper yet — run `gradle wrapper` to add one.
 - Not yet published to a Maven repository; consume via `includeBuild` or a local
   `mavenLocal()` publish for now.

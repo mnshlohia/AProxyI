@@ -11,6 +11,10 @@ import org.json.JSONObject
  * Utility class for formatting request/response bodies into readable format.
  */
 object BodyFormatter {
+
+    /** Above this input size, skip pretty-printing entirely. */
+    private const val PRETTY_PRINT_LIMIT = 64 * 1024
+
     
     private val gson = GsonBuilder()
         .setPrettyPrinting()
@@ -55,7 +59,15 @@ object BodyFormatter {
      */
     private fun formatString(body: String, maxSize: Int): String {
         val trimmed = body.trim()
-        
+
+        // Pretty-printing parses and re-serialises the ENTIRE payload and only
+        // truncates afterwards, so maxSize does not bound the work. Bound the
+        // input instead: past this size, store the raw text rather than risk a
+        // multi-hundred-millisecond parse on whatever thread called us.
+        if (trimmed.length > PRETTY_PRINT_LIMIT) {
+            return trimmed.take(maxSize)
+        }
+
         // Check if it's JSON
         if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
             return tryFormatJson(trimmed, maxSize) ?: trimmed.take(maxSize)

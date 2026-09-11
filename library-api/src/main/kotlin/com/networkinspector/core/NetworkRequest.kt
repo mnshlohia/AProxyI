@@ -148,7 +148,15 @@ enum class RequestStatus {
     FAILED,
     
     /** Request was cancelled */
-    CANCELLED
+    CANCELLED,
+
+    /**
+     * No completion call arrived within
+     * [NetworkInspectorConfig.activeRequestTimeoutMs], so the request was swept
+     * out of the in-flight map. Usually means a code path forgot to call
+     * onRequestSuccess / onRequestFailed rather than that the network timed out.
+     */
+    TIMED_OUT
 }
 
 /**

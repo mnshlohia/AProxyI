@@ -2,7 +2,6 @@ package com.networkinspector.interceptor
 
 import android.util.Log
 import com.networkinspector.NetworkInspector
-import com.networkinspector.util.BodyFormatter
 
 /**
  * A callback interceptor that wraps your existing callbacks to automatically
@@ -78,14 +77,14 @@ class CallbackInterceptor<T> private constructor(
             tag: String? = null
         ): CallbackInterceptor<T> {
             return try {
-                val formattedBody = try { BodyFormatter.format(body) } catch (e: Throwable) { null }
-                
+                // Pass the raw body through: onRequestStart formats it, so
+                // formatting here as well did the expensive work twice.
                 val requestId = NetworkInspector.onRequestStart(
                     url = url,
                     method = method,
                     params = params,
                     headers = headers,
-                    body = formattedBody,
+                    body = body,
                     tag = tag
                 )
                 

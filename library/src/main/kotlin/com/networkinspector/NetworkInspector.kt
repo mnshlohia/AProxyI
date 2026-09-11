@@ -13,6 +13,7 @@ import com.networkinspector.util.BodyFormatter
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -52,6 +53,7 @@ object NetworkInspector {
     private const val TAG = "NetworkInspector"
     
     private var appContext: Context? = null
+    private var initialized = false
     private var config: NetworkInspectorConfig = NetworkInspectorConfig.RELEASE
     private var notificationManager: InspectorNotificationManager? = null
     
@@ -60,11 +62,15 @@ object NetworkInspector {
     private val activeRequests = ConcurrentHashMap<String, NetworkRequest>()
     private val requestIdGenerator = AtomicLong(0)
     
-    // Stats
-    private var totalRequests = 0
-    private var successfulRequests = 0
-    private var failedRequests = 0
-    private var activeRequestCount = 0
+    // Stats. Mutated from OkHttp dispatcher threads, the worker thread and
+    // caller threads, so plain Ints would lose updates and read stale.
+    private val totalRequests = AtomicInteger(0)
+    private val successfulRequests = AtomicInteger(0)
+    private val failedRequests = AtomicInteger(0)
+    private val activeRequestCount = AtomicInteger(0)
+
+    // Throttles the stale in-flight sweep, which runs on the request path.
+    private val lastSweepAt = AtomicLong(0)
     
     // Listeners
     private val listeners = CopyOnWriteArrayList<RequestListener>()
@@ -91,15 +97,29 @@ object NetworkInspector {
      */
     @JvmStatic
     fun init(context: Context, config: NetworkInspectorConfig) {
-        appContext = context.applicationContext
-        this.config = config
-        
-        if (config.enabled && config.showNotification) {
-            notificationManager = InspectorNotificationManager(context.applicationContext, config)
-        }
-        
-        if (config.logToLogcat) {
-            Log.d(TAG, "NetworkInspector initialized (enabled: ${config.enabled})")
+        synchronized(this) {
+            if (initialized) {
+                Log.w(TAG, "init() called more than once; ignoring the later call")
+                return
+            }
+            initialized = true
+
+            appContext = context.applicationContext
+            this.config = config
+
+            if (config.enabled && config.showNotification) {
+                notificationManager = InspectorNotificationManager(appContext!!, config)
+            }
+
+            // AnalyticsInspector has its own switches. Without this they default
+            // to on, so a RELEASE config would silence network capture while
+            // analytics capture kept running.
+            AnalyticsInspector.setEnabled(config.enabled)
+            AnalyticsInspector.setLogToLogcat(config.logToLogcat)
+
+            if (config.logToLogcat) {
+                Log.d(TAG, "NetworkInspector initialized (enabled: ${config.enabled})")
+            }
         }
     }
     
@@ -135,17 +155,21 @@ object NetworkInspector {
         return try {
             if (!config.enabled) return ""
             if (!config.shouldTrack(url)) return ""
-            
+
+            sweepStaleRequests()
+
             val requestId = "req_${requestIdGenerator.incrementAndGet()}_${System.currentTimeMillis()}"
             
             val bodyString = try { BodyFormatter.format(body, config.maxBodySize) } catch (e: Throwable) { null }
-            
+
+            // Redact at capture: secrets never enter the store, so they cannot
+            // escape through the UI, share, or copy-as-cURL.
             val request = NetworkRequest(
                 id = requestId,
-                url = url,
+                url = config.redactUrl(url),
                 method = method.uppercase(),
-                params = params,
-                headers = headers,
+                params = config.redactParams(params),
+                headers = config.redactHeaders(headers),
                 requestBody = bodyString,
                 startTime = System.currentTimeMillis(),
                 status = RequestStatus.IN_PROGRESS,
@@ -153,8 +177,8 @@ object NetworkInspector {
             )
             
             activeRequests[requestId] = request
-            activeRequestCount++
-            totalRequests++
+            activeRequestCount.incrementAndGet()
+            totalRequests.incrementAndGet()
             
             if (config.logToLogcat) {
                 Log.d(TAG, "📤 [${request.method}] ${request.shortName}")
@@ -190,8 +214,8 @@ object NetworkInspector {
             if (!config.enabled || requestId.isEmpty()) return
             
             val request = activeRequests.remove(requestId) ?: return
-            activeRequestCount--
-            successfulRequests++
+            activeRequestCount.decrementAndGet()
+            successfulRequests.incrementAndGet()
             
             val endTime = System.currentTimeMillis()
             
@@ -204,7 +228,7 @@ object NetworkInspector {
                         status = RequestStatus.SUCCESS,
                         responseCode = responseCode,
                         responseBody = responseBody,
-                        responseHeaders = headers,
+                        responseHeaders = config.redactHeaders(headers),
                         endTime = endTime,
                         duration = endTime - request.startTime
                     )
@@ -245,8 +269,8 @@ object NetworkInspector {
             if (!config.enabled || requestId.isEmpty()) return
             
             val request = activeRequests.remove(requestId) ?: return
-            activeRequestCount--
-            failedRequests++
+            activeRequestCount.decrementAndGet()
+            failedRequests.incrementAndGet()
             
             val endTime = System.currentTimeMillis()
             
@@ -297,27 +321,33 @@ object NetworkInspector {
      */
     @JvmStatic
     fun onRequestCancelled(requestId: String) {
-        if (!config.enabled || requestId.isEmpty()) return
-        
-        val request = activeRequests.remove(requestId) ?: return
-        activeRequestCount--
-        
-        val endTime = System.currentTimeMillis()
-        val completedRequest = request.copy(
-            status = RequestStatus.CANCELLED,
-            endTime = endTime,
-            duration = endTime - request.startTime,
-            errorMessage = "Request cancelled"
-        )
-        
-        addRequest(completedRequest)
-        
-        if (config.logToLogcat) {
-            Log.w(TAG, "⚠️ [${completedRequest.method}] ${completedRequest.shortName} | Cancelled")
+        // Wrapped like every sibling entry point: this class is documented as
+        // crash-safe, and callers pass arbitrary ids.
+        try {
+            if (!config.enabled || requestId.isEmpty()) return
+
+            val request = activeRequests.remove(requestId) ?: return
+            activeRequestCount.decrementAndGet()
+
+            val endTime = System.currentTimeMillis()
+            val completedRequest = request.copy(
+                status = RequestStatus.CANCELLED,
+                endTime = endTime,
+                duration = endTime - request.startTime,
+                errorMessage = "Request cancelled"
+            )
+
+            addRequest(completedRequest)
+
+            if (config.logToLogcat) {
+                Log.w(TAG, "⚠️ [${completedRequest.method}] ${completedRequest.shortName} | Cancelled")
+            }
+
+            try { notificationManager?.updateNotification(getStats()) } catch (e: Throwable) { }
+            try { notifyListeners() } catch (e: Throwable) { }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Error in onRequestCancelled", e)
         }
-        
-        notificationManager?.updateNotification(getStats())
-        notifyListeners()
     }
     
     // ==================== Query Methods ====================
@@ -360,10 +390,10 @@ object NetworkInspector {
      */
     @JvmStatic
     fun getStats(): RequestStats = RequestStats(
-        total = totalRequests,
-        active = activeRequestCount,
-        successful = successfulRequests,
-        failed = failedRequests
+        total = totalRequests.get(),
+        active = activeRequestCount.get(),
+        successful = successfulRequests.get(),
+        failed = failedRequests.get()
     )
     
     /**
@@ -371,13 +401,21 @@ object NetworkInspector {
      */
     @JvmStatic
     fun clearAll() {
-        requests.clear()
-        totalRequests = 0
-        successfulRequests = 0
-        failedRequests = 0
-        
-        notificationManager?.dismiss()
-        notifyListeners()
+        try {
+            requests.clear()
+            // The in-flight map and its counter were previously left behind, so
+            // the active count survived a Clear and drifted permanently.
+            activeRequests.clear()
+            totalRequests.set(0)
+            successfulRequests.set(0)
+            failedRequests.set(0)
+            activeRequestCount.set(0)
+
+            try { notificationManager?.dismiss() } catch (e: Throwable) { }
+            try { notifyListeners() } catch (e: Throwable) { }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Error in clearAll", e)
+        }
     }
     
     // ==================== UI Methods ====================
@@ -445,11 +483,70 @@ object NetworkInspector {
     // ==================== Internal Methods ====================
     
     private fun addRequest(request: NetworkRequest) {
-        requests.add(0, request)
-        
-        // Trim if over limit
-        while (requests.size > config.maxRequests) {
-            requests.removeAt(requests.size - 1)
+        // Reachable from the worker thread (success/failed) and from caller
+        // threads (cancelled, sweep). Unsynchronised, two threads could both
+        // pass the size check and removeAt a stale index, throwing
+        // IndexOutOfBoundsException out of a CopyOnWriteArrayList.
+        synchronized(requests) {
+            try {
+                requests.add(0, request)
+
+                while (requests.size > config.maxRequests) {
+                    requests.removeAt(requests.size - 1)
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Error storing request", e)
+            }
+        }
+    }
+
+    /**
+     * Move in-flight requests that never completed into [RequestStatus.TIMED_OUT].
+     *
+     * Without this, a code path that forgets to call onRequestSuccess /
+     * onRequestFailed leaks its map entry and permanently inflates the active
+     * count shown in the notification.
+     */
+    private fun sweepStaleRequests() {
+        try {
+            val timeout = config.activeRequestTimeoutMs
+            if (timeout <= 0L || activeRequests.isEmpty()) return
+
+            val now = System.currentTimeMillis()
+            val last = lastSweepAt.get()
+            // At most once a second: this runs on the request path.
+            if (now - last < 1_000L) return
+            if (!lastSweepAt.compareAndSet(last, now)) return
+
+            var swept = 0
+            for ((id, request) in activeRequests.entries.toList()) {
+                if (now - request.startTime <= timeout) continue
+                // remove() returning null means another thread completed it first.
+                if (activeRequests.remove(id) == null) continue
+
+                activeRequestCount.decrementAndGet()
+                failedRequests.incrementAndGet()
+                swept++
+
+                addRequest(
+                    request.copy(
+                        status = RequestStatus.TIMED_OUT,
+                        endTime = now,
+                        duration = now - request.startTime,
+                        errorMessage = "No completion call within ${timeout}ms"
+                    )
+                )
+            }
+
+            if (swept > 0) {
+                if (config.logToLogcat) {
+                    Log.w(TAG, "Swept $swept stale in-flight request(s)")
+                }
+                try { notificationManager?.updateNotification(getStats()) } catch (e: Throwable) { }
+                try { notifyListeners() } catch (e: Throwable) { }
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Error sweeping stale requests", e)
         }
     }
     
@@ -463,7 +560,7 @@ object NetworkInspector {
         listeners.forEach { 
             try {
                 it.onRequestsUpdated(currentRequests, currentStats)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e(TAG, "Error notifying listener", e)
             }
         }
