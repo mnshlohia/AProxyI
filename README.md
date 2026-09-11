@@ -96,12 +96,78 @@ AnalyticsInspector.logEvent("add_to_cart", bundle, AnalyticsSource.FIREBASE)
 
 ### Opening the UI
 
+There are two ways in. **Wire up the manual entry point** — it is the reliable
+one; treat the notification as a convenience.
+
 ```kotlin
-NetworkInspector.launch(context)
-NetworkInspector.launchAnalytics(context)
+NetworkInspector.launch(context)          // network requests
+NetworkInspector.launchAnalytics(context) // analytics events
 ```
 
-Also reachable by tapping the ongoing notification.
+Hang that off a debug drawer item, an overflow menu entry, or a shake detector.
+It works immediately after `init()`, before any request has been made.
+
+## Notifications
+
+The library shows an ongoing notification with live request counts. Tapping it
+opens the inspector; the **Clear** action empties the captured list.
+
+### What you do NOT need to write
+
+Nothing wires the notification tap. `RequestListActivity` is declared in the
+library's own manifest, manifest merger pulls it into your app, and the library
+builds the `PendingIntent` itself. Tapping the notification opens the inspector
+with no app-side code.
+
+### What you DO need to write
+
+**1. Initialise the library.** Without this no notification manager is
+constructed, so no notification ever appears:
+
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        NetworkInspector.init(this)
+    }
+}
+```
+
+**2. Request `POST_NOTIFICATIONS` at runtime on Android 13+ (API 33).**
+
+This is the one that catches people. The library *declares* the permission in its
+manifest, but on API 33+ declaring is not granting. Without the runtime grant,
+`NotificationManagerCompat.notify()` throws `SecurityException`, which the
+library catches and swallows — so you get no notification, no entry point, and
+no error telling you why.
+
+```kotlin
+// Debug builds only.
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            REQ_NOTIFICATIONS
+        )
+    }
+}
+```
+
+> **If the notification never shows up, check this first.** The swallowed
+> `SecurityException` is by far the most common cause.
+
+### Two known limitations
+
+- **The notification only appears after the first request.** It is refreshed from
+  the request lifecycle and is not posted at `init()`, so until traffic flows
+  there is no notification to tap.
+- **Clear dismisses it.** The Clear action empties the list and removes the
+  notification, so the entry point disappears until the next request.
+
+Both are why you want the manual `NetworkInspector.launch(context)` entry point
+above rather than relying on the notification alone.
 
 ## The parity contract
 
@@ -118,10 +184,15 @@ it costs a little method count in exchange for eliminating model drift entirely.
 
 Early. Known gaps:
 
-- **Resource files are missing.** The UI is Views-based and references layouts,
-  menus and colors (`activity_analytics_list`, `item_request`,
-  `menu_request_detail`, `ni_accent`, …) that are not yet in the repo. The
-  project will not compile until `library/src/main/res/` is populated.
+- **Resource files are missing.** The UI is Views-based and will not compile
+  until `library/src/main/res/` is populated. Needed: the view-binding layouts
+  `activity_request_list` and `activity_request_detail`; the layouts
+  `activity_analytics_list`, `activity_analytics_detail`, `item_request`,
+  `item_analytics_event`; the menus `menu_request_list`, `menu_request_detail`;
+  the colors `ni_accent`, `ni_success`, `ni_warning`, `ni_info`; and the drawable
+  `ic_network_inspector`.
+- **Known defects.** See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — 17 open issues,
+  including three credential-leak paths and two crash risks.
 - No Gradle wrapper yet — run `gradle wrapper` to add one.
 - Not yet published to a Maven repository; consume via `includeBuild` or a local
   `mavenLocal()` publish for now.
