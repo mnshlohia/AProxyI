@@ -2,7 +2,7 @@ package com.networkinspector.interceptor
 
 import android.util.Log
 import com.networkinspector.NetworkInspector
-import com.networkinspector.util.BodyFormatter
+import com.networkinspector.internal.util.BodyFormatter
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request

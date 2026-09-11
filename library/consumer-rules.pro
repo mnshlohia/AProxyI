@@ -1,9 +1,12 @@
-# Public surface mirrored by :library-no-op. Keep it stable so that swapping
-# artifacts between debug and release cannot change what consumers link against.
--keep class com.networkinspector.NetworkInspector { *; }
--keep class com.networkinspector.NetworkInspector$RequestListener { *; }
--keep class com.networkinspector.NetworkInspectorWrapper { *; }
--keep class com.networkinspector.AnalyticsInspector { *; }
--keep class com.networkinspector.AnalyticsInspector$EventListener { *; }
--keep class com.networkinspector.core.** { *; }
--keep class com.networkinspector.interceptor.** { *; }
+# Public surface mirrored by :library-no-op, and pinned by Binary Compatibility
+# Validator. Keep it stable so swapping artifacts between debug and release
+# cannot change what consumers link against.
+-keep class com.networkinspector.NetworkInspector { public *; }
+-keep class com.networkinspector.NetworkInspectorWrapper { public *; }
+-keep class com.networkinspector.NetworkInspectorWrapper$* { public *; }
+-keep class com.networkinspector.AnalyticsInspector { public *; }
+-keep class com.networkinspector.core.** { public *; }
+-keep class com.networkinspector.interceptor.** { public *; }
+
+# Implementation detail: everything under .internal is Kotlin-internal and is
+# free to be renamed or removed.

@@ -1,7 +1,6 @@
 package com.networkinspector
 
 import android.os.Bundle
-import com.networkinspector.core.AnalyticsEvent
 import com.networkinspector.core.AnalyticsSource
 
 /**
@@ -31,21 +30,6 @@ object AnalyticsInspector {
     }
 
     @JvmStatic
-    fun getEvents(): List<AnalyticsEvent> = emptyList()
-
-    @JvmStatic
-    fun getEvents(source: AnalyticsSource): List<AnalyticsEvent> = emptyList()
-
-    @JvmStatic
-    fun searchEvents(query: String): List<AnalyticsEvent> = emptyList()
-
-    @JvmStatic
-    fun getEvent(id: String): AnalyticsEvent? = null
-
-    @JvmStatic
-    fun getEventCount(): Int = 0
-
-    @JvmStatic
     fun clearAll() {
         // No-op.
     }
@@ -58,19 +42,5 @@ object AnalyticsInspector {
     @JvmStatic
     fun setLogToLogcat(log: Boolean) {
         // No-op.
-    }
-
-    @JvmStatic
-    fun addListener(listener: EventListener) {
-        // No-op.
-    }
-
-    @JvmStatic
-    fun removeListener(listener: EventListener) {
-        // No-op.
-    }
-
-    interface EventListener {
-        fun onEventsUpdated(events: List<AnalyticsEvent>)
     }
 }

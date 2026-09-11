@@ -1,4 +1,4 @@
-package com.networkinspector.util
+package com.networkinspector.internal.util
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
@@ -10,7 +10,7 @@ import org.json.JSONObject
 /**
  * Utility class for formatting request/response bodies into readable format.
  */
-object BodyFormatter {
+internal object BodyFormatter {
 
     /** Above this input size, skip pretty-printing entirely. */
     private const val PRETTY_PRINT_LIMIT = 64 * 1024

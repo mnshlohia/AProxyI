@@ -1,4 +1,4 @@
-package com.networkinspector.notification
+package com.networkinspector.internal.notification
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -3,9 +3,6 @@ package com.networkinspector
 import android.content.Context
 import android.content.Intent
 import com.networkinspector.core.NetworkInspectorConfig
-import com.networkinspector.core.NetworkRequest
-import com.networkinspector.core.RequestStats
-import com.networkinspector.core.RequestStatus
 
 /**
  * No-op mirror of [com.networkinspector.NetworkInspector].
@@ -15,10 +12,9 @@ import com.networkinspector.core.RequestStatus
  * build -- the capture code is not merely disabled, it is absent from the APK.
  *
  * ## Parity contract
- * This object must expose exactly the same public signatures as the real one
- * in `:library`. Adding a public method there without adding the stub here
- * breaks the consumer's *release* build -- loudly, at compile time, which is
- * the intended failure mode.
+ * This object must expose exactly the same public signatures as the real one in
+ * `:library`. Binary Compatibility Validator checks this: run `./gradlew
+ * apiDump` after changing either side, and CI fails if the two drift.
  */
 object NetworkInspector {
 
@@ -74,26 +70,6 @@ object NetworkInspector {
     }
 
     @JvmStatic
-    fun getRequests(): List<NetworkRequest> = emptyList()
-
-    @JvmStatic
-    fun getRequests(status: RequestStatus): List<NetworkRequest> = emptyList()
-
-    @JvmStatic
-    fun getRequest(id: String): NetworkRequest? = null
-
-    @JvmStatic
-    fun searchRequests(query: String): List<NetworkRequest> = emptyList()
-
-    @JvmStatic
-    fun getStats(): RequestStats = RequestStats(
-        total = 0,
-        active = 0,
-        successful = 0,
-        failed = 0
-    )
-
-    @JvmStatic
     fun clearAll() {
         // No-op.
     }
@@ -117,18 +93,4 @@ object NetworkInspector {
 
     @JvmStatic
     fun getAnalyticsLaunchIntent(context: Context): Intent = Intent()
-
-    @JvmStatic
-    fun addListener(listener: RequestListener) {
-        // No-op: listeners are never invoked.
-    }
-
-    @JvmStatic
-    fun removeListener(listener: RequestListener) {
-        // No-op.
-    }
-
-    interface RequestListener {
-        fun onRequestsUpdated(requests: List<NetworkRequest>, stats: RequestStats)
-    }
 }

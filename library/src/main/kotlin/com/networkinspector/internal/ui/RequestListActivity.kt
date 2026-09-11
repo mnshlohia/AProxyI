@@ -1,6 +1,9 @@
-package com.networkinspector.ui
+package com.networkinspector.internal.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,7 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,13 +29,19 @@ import com.networkinspector.databinding.ActivityRequestListBinding
 /**
  * Activity showing a list of all tracked network requests.
  */
-class RequestListActivity : AppCompatActivity(), NetworkInspector.RequestListener {
+internal class RequestListActivity : AppCompatActivity(), NetworkInspector.RequestListener {
     
     private lateinit var binding: ActivityRequestListBinding
     private lateinit var adapter: RequestAdapter
     
     private var currentFilter: RequestStatus? = null
     private var searchQuery: String = ""
+
+    // Registered unconditionally: ActivityResultLauncher must be created before
+    // the activity reaches STARTED.
+    private val notificationPermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
+
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +55,35 @@ class RequestListActivity : AppCompatActivity(), NetworkInspector.RequestListene
         
         NetworkInspector.addListener(this)
         updateData()
+
+        requestNotificationPermissionIfNeeded()
+    }
+
+    /**
+     * Ask for POST_NOTIFICATIONS here rather than making every integrating app
+     * write it.
+     *
+     * The library declares the permission, but on API 33+ declaring is not
+     * granting: without the runtime grant, posting the ongoing notification
+     * throws SecurityException, which is caught and swallowed, leaving no
+     * notification and no diagnostic. Asking once the developer has opened the
+     * inspector is the natural moment, and it is also the only moment we are
+     * guaranteed to have an Activity.
+     */
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) return
+
+        // Not using shouldShowRequestPermissionRationale: this is a debug-only
+        // tool shown to the developer who just opened it, so an extra rationale
+        // dialog would be noise. A denial is silently accepted -- the list
+        // screen works regardless; only the notification shortcut is lost.
+        notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
     
     override fun onDestroy() {

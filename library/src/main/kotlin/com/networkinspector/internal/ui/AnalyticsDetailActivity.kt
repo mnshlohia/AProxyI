@@ -1,4 +1,4 @@
-package com.networkinspector.ui
+package com.networkinspector.internal.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,7 +19,7 @@ import com.networkinspector.core.AnalyticsSource
 /**
  * Activity to display analytics event details - matches Network Inspector styling
  */
-class AnalyticsDetailActivity : AppCompatActivity() {
+internal class AnalyticsDetailActivity : AppCompatActivity() {
     
     private lateinit var toolbar: MaterialToolbar
     private lateinit var tvSource: TextView

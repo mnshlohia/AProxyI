@@ -1,4 +1,4 @@
-package com.networkinspector.ui
+package com.networkinspector.internal.ui
 
 import android.content.Context
 import android.content.Intent
@@ -24,7 +24,7 @@ import com.networkinspector.core.AnalyticsSource
 /**
  * Activity to display analytics events - matches Network Inspector styling
  */
-class AnalyticsListActivity : AppCompatActivity(), AnalyticsInspector.EventListener {
+internal class AnalyticsListActivity : AppCompatActivity(), AnalyticsInspector.EventListener {
     
     private lateinit var toolbar: MaterialToolbar
     private lateinit var etSearch: EditText
@@ -196,7 +196,7 @@ class AnalyticsListActivity : AppCompatActivity(), AnalyticsInspector.EventListe
 /**
  * Adapter for analytics events
  */
-class AnalyticsAdapter(
+internal class AnalyticsAdapter(
     private val onClick: (AnalyticsEvent) -> Unit
 ) : RecyclerView.Adapter<AnalyticsAdapter.EventViewHolder>() {
     

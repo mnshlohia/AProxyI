@@ -7,9 +7,9 @@ import com.networkinspector.core.NetworkInspectorConfig
 import com.networkinspector.core.NetworkRequest
 import com.networkinspector.core.RequestStats
 import com.networkinspector.core.RequestStatus
-import com.networkinspector.notification.InspectorNotificationManager
-import com.networkinspector.ui.RequestListActivity
-import com.networkinspector.util.BodyFormatter
+import com.networkinspector.internal.notification.InspectorNotificationManager
+import com.networkinspector.internal.ui.RequestListActivity
+import com.networkinspector.internal.util.BodyFormatter
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
@@ -355,28 +355,24 @@ object NetworkInspector {
     /**
      * Get all recorded requests (newest first)
      */
-    @JvmStatic
-    fun getRequests(): List<NetworkRequest> = requests.toList()
+    internal fun getRequests(): List<NetworkRequest> = requests.toList()
     
     /**
      * Get requests filtered by status
      */
-    @JvmStatic
-    fun getRequests(status: RequestStatus): List<NetworkRequest> = 
+    internal fun getRequests(status: RequestStatus): List<NetworkRequest> = 
         requests.filter { it.status == status }
     
     /**
      * Get a specific request by ID
      */
-    @JvmStatic
-    fun getRequest(id: String): NetworkRequest? = 
+    internal fun getRequest(id: String): NetworkRequest? = 
         requests.find { it.id == id } ?: activeRequests[id]
     
     /**
      * Search requests by URL or method
      */
-    @JvmStatic
-    fun searchRequests(query: String): List<NetworkRequest> {
+    internal fun searchRequests(query: String): List<NetworkRequest> {
         val lowerQuery = query.lowercase()
         return requests.filter { request ->
             request.url.lowercase().contains(lowerQuery) ||
@@ -388,8 +384,7 @@ object NetworkInspector {
     /**
      * Get current statistics
      */
-    @JvmStatic
-    fun getStats(): RequestStats = RequestStats(
+    internal fun getStats(): RequestStats = RequestStats(
         total = totalRequests.get(),
         active = activeRequestCount.get(),
         successful = successfulRequests.get(),
@@ -440,7 +435,7 @@ object NetworkInspector {
     fun launchAnalytics(context: Context) {
         if (!config.enabled) return
         
-        val intent = Intent(context, com.networkinspector.ui.AnalyticsListActivity::class.java).apply {
+        val intent = Intent(context, com.networkinspector.internal.ui.AnalyticsListActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(intent)
@@ -459,7 +454,7 @@ object NetworkInspector {
      */
     @JvmStatic
     fun getAnalyticsLaunchIntent(context: Context): Intent {
-        return Intent(context, com.networkinspector.ui.AnalyticsListActivity::class.java)
+        return Intent(context, com.networkinspector.internal.ui.AnalyticsListActivity::class.java)
     }
     
     // ==================== Listener Methods ====================
@@ -467,16 +462,14 @@ object NetworkInspector {
     /**
      * Add a listener for request updates
      */
-    @JvmStatic
-    fun addListener(listener: RequestListener) {
+    internal fun addListener(listener: RequestListener) {
         listeners.add(listener)
     }
     
     /**
      * Remove a listener
      */
-    @JvmStatic
-    fun removeListener(listener: RequestListener) {
+    internal fun removeListener(listener: RequestListener) {
         listeners.remove(listener)
     }
     
@@ -569,7 +562,7 @@ object NetworkInspector {
     /**
      * Listener interface for request updates
      */
-    interface RequestListener {
+    internal interface RequestListener {
         fun onRequestsUpdated(requests: List<NetworkRequest>, stats: RequestStats)
     }
 }

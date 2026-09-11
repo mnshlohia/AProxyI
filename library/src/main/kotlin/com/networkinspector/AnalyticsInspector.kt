@@ -116,8 +116,7 @@ object AnalyticsInspector {
     /**
      * Get all events (newest first)
      */
-    @JvmStatic
-    fun getEvents(): List<AnalyticsEvent> {
+    internal fun getEvents(): List<AnalyticsEvent> {
         return try {
             events.toList()
         } catch (e: Throwable) {
@@ -128,8 +127,7 @@ object AnalyticsInspector {
     /**
      * Get events filtered by source
      */
-    @JvmStatic
-    fun getEvents(source: AnalyticsSource): List<AnalyticsEvent> {
+    internal fun getEvents(source: AnalyticsSource): List<AnalyticsEvent> {
         return try {
             events.filter { it.source == source }
         } catch (e: Throwable) {
@@ -140,8 +138,7 @@ object AnalyticsInspector {
     /**
      * Search events by name or params
      */
-    @JvmStatic
-    fun searchEvents(query: String): List<AnalyticsEvent> {
+    internal fun searchEvents(query: String): List<AnalyticsEvent> {
         return try {
             if (query.isBlank()) return getEvents()
             events.filter { it.matchesSearch(query) }
@@ -153,8 +150,7 @@ object AnalyticsInspector {
     /**
      * Get a specific event by ID
      */
-    @JvmStatic
-    fun getEvent(id: String): AnalyticsEvent? {
+    internal fun getEvent(id: String): AnalyticsEvent? {
         return try {
             events.find { it.id == id }
         } catch (e: Throwable) {
@@ -165,8 +161,7 @@ object AnalyticsInspector {
     /**
      * Get event count
      */
-    @JvmStatic
-    fun getEventCount(): Int {
+    internal fun getEventCount(): Int {
         return try {
             events.size
         } catch (e: Throwable) {
@@ -214,8 +209,7 @@ object AnalyticsInspector {
     /**
      * Add a listener for event updates
      */
-    @JvmStatic
-    fun addListener(listener: EventListener) {
+    internal fun addListener(listener: EventListener) {
         try {
             listeners.add(listener)
         } catch (e: Throwable) {
@@ -226,8 +220,7 @@ object AnalyticsInspector {
     /**
      * Remove a listener
      */
-    @JvmStatic
-    fun removeListener(listener: EventListener) {
+    internal fun removeListener(listener: EventListener) {
         try {
             listeners.remove(listener)
         } catch (e: Throwable) {
@@ -284,7 +277,7 @@ object AnalyticsInspector {
     /**
      * Listener interface for event updates
      */
-    interface EventListener {
+    internal interface EventListener {
         fun onEventsUpdated(events: List<AnalyticsEvent>)
     }
 }

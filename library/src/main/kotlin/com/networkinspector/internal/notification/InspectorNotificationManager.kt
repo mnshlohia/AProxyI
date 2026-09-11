@@ -1,4 +1,4 @@
-package com.networkinspector.notification
+package com.networkinspector.internal.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,7 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.networkinspector.R
 import com.networkinspector.core.NetworkInspectorConfig
 import com.networkinspector.core.RequestStats
-import com.networkinspector.ui.RequestListActivity
+import com.networkinspector.internal.ui.RequestListActivity
 
 /**
  * Manages notifications for NetworkInspector.

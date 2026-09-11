@@ -133,30 +133,17 @@ class MyApp : Application() {
 }
 ```
 
-**2. Request `POST_NOTIFICATIONS` at runtime on Android 13+ (API 33).**
+**2. Nothing, for notification permissions.**
 
-This is the one that catches people. The library *declares* the permission in its
-manifest, but on API 33+ declaring is not granting. Without the runtime grant,
-`NotificationManagerCompat.notify()` throws `SecurityException`, which the
-library catches and swallows — so you get no notification, no entry point, and
-no error telling you why.
+On Android 13+ `POST_NOTIFICATIONS` must be granted at runtime, not merely
+declared. The library requests it itself the first time you open the inspector
+UI, so you do not write the permission dance in your app.
 
-```kotlin
-// Debug builds only.
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            REQ_NOTIFICATIONS
-        )
-    }
-}
-```
+Deny it and everything still works — you lose only the notification shortcut,
+and reach the inspector through the manual entry point below. (The library
+catches the resulting `SecurityException` when posting, so a denial can never
+crash your app.)
 
-> **If the notification never shows up, check this first.** The swallowed
-> `SecurityException` is by far the most common cause.
 
 ### Two known limitations
 
@@ -212,16 +199,37 @@ are therefore swept into `RequestStatus.TIMED_OUT` and counted as failed, so a
 missed callback shows up as a visible entry instead of silently skewing the
 stats. Set the timeout to `0` to disable the sweep.
 
-## The parity contract
+## API surface and the parity contract
 
-`:library` and `:library-no-op` must expose exactly the same public signatures.
-Adding a public method to one without the other breaks the consumer's **release**
-build at compile time — loud and early, which is the intended failure mode. Keep
-shared data models in `:library-api` so they cannot drift.
+Everything under `com.networkinspector.internal.*` is Kotlin-`internal`: the UI,
+the notification manager, and the body formatter. It is an implementation detail
+and free to change. The public surface is deliberately small — roughly 24 entry
+points across `NetworkInspector`, `AnalyticsInspector`,
+`NetworkInspectorWrapper`, the two interceptors, and the models in
+`com.networkinspector.core`.
 
-The tradeoff: `:library-api` ships in release builds. It is inert — data classes
-with no capture, storage, UI or permissions — and nothing ever populates them, so
-it costs a little method count in exchange for eliminating model drift entirely.
+That matters because `:library` and `:library-no-op` must expose an *identical*
+public API — consumers link one in debug and the other in release, so any drift
+breaks the consumer's **release** build. Every public member is a member the
+no-op has to mirror by hand, so a small surface is a small maintenance burden.
+
+[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
+pins it:
+
+```
+./gradlew apiDump    # regenerate the checked-in *.api files after an API change
+./gradlew apiCheck   # fails if code and *.api have diverged (wired into `check`)
+```
+
+Diffing `library/api/library.api` against `library-no-op/api/library-no-op.api`
+is the parity check. Run `apiDump` and commit the result whenever you change a
+public signature on either side.
+
+Shared data models live in `:library-api` so the two modules cannot drift on
+types. The tradeoff: that module ships in release builds. It is inert — data
+classes with no capture, storage, UI or permissions, and nothing populates them
+at runtime — so it costs a little method count in exchange for removing a whole
+class of bug.
 
 ## Status
 

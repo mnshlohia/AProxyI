@@ -2,8 +2,6 @@ package com.networkinspector
 
 import android.content.Context
 import com.networkinspector.core.NetworkInspectorConfig
-import com.networkinspector.core.NetworkRequest
-import com.networkinspector.core.RequestStats
 
 /**
  * A convenient wrapper class for NetworkInspector that provides a fluent API
@@ -192,24 +190,6 @@ object NetworkInspectorWrapper {
     }
     
     /**
-     * Get all recorded requests
-     */
-    @JvmStatic
-    fun getRequests(): List<NetworkRequest> = NetworkInspector.getRequests()
-    
-    /**
-     * Get current statistics
-     */
-    @JvmStatic
-    fun getStats(): RequestStats = NetworkInspector.getStats()
-    
-    /**
-     * Search requests by URL or method
-     */
-    @JvmStatic
-    fun search(query: String): List<NetworkRequest> = NetworkInspector.searchRequests(query)
-    
-    /**
      * Clear all recorded requests
      */
     @JvmStatic
@@ -220,20 +200,6 @@ object NetworkInspectorWrapper {
      */
     @JvmStatic
     fun launch(context: Context) = NetworkInspector.launch(context)
-    
-    /**
-     * Add a listener for request updates
-     */
-    @JvmStatic
-    fun addListener(listener: NetworkInspector.RequestListener) = 
-        NetworkInspector.addListener(listener)
-    
-    /**
-     * Remove a listener
-     */
-    @JvmStatic
-    fun removeListener(listener: NetworkInspector.RequestListener) = 
-        NetworkInspector.removeListener(listener)
     
     /**
      * Builder class for creating and tracking requests with a fluent API

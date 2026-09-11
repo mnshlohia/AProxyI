@@ -2,8 +2,6 @@ package com.networkinspector
 
 import android.content.Context
 import com.networkinspector.core.NetworkInspectorConfig
-import com.networkinspector.core.NetworkRequest
-import com.networkinspector.core.RequestStats
 
 /**
  * No-op mirror of [com.networkinspector.NetworkInspectorWrapper].
@@ -48,27 +46,10 @@ object NetworkInspectorWrapper {
     ): T = block().second
 
     @JvmStatic
-    fun getRequests(): List<NetworkRequest> = emptyList()
-
-    @JvmStatic
-    fun getStats(): RequestStats = NetworkInspector.getStats()
-
-    @JvmStatic
-    fun search(query: String): List<NetworkRequest> = emptyList()
-
-    @JvmStatic
     fun clear() = NetworkInspector.clearAll()
 
     @JvmStatic
     fun launch(context: Context) = NetworkInspector.launch(context)
-
-    @JvmStatic
-    fun addListener(listener: NetworkInspector.RequestListener) =
-        NetworkInspector.addListener(listener)
-
-    @JvmStatic
-    fun removeListener(listener: NetworkInspector.RequestListener) =
-        NetworkInspector.removeListener(listener)
 
     class RequestBuilder {
         fun url(url: String) = apply { }

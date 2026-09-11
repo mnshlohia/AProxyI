@@ -1,4 +1,4 @@
-package com.networkinspector.ui
+package com.networkinspector.internal.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -21,7 +21,7 @@ import com.networkinspector.databinding.ActivityRequestDetailBinding
 /**
  * Activity showing detailed information about a single network request.
  */
-class RequestDetailActivity : AppCompatActivity() {
+internal class RequestDetailActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityRequestDetailBinding
     private var request: NetworkRequest? = null
