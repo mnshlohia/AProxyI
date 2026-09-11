@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="aproxyi_title_requests">Network Inspector</string>
-    <string name="aproxyi_title_analytics">Analytics Inspector</string>
+    <string name="aproxyi_title_requests">AProxyI</string>
+    <string name="aproxyi_title_analytics">AProxyI Analytics</string>
     <string name="aproxyi_search_hint">Search requests</string>
     <string name="aproxyi_search_events_hint">Search events</string>
     <string name="aproxyi_empty_requests">No requests captured yet</string>

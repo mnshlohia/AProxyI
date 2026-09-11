@@ -5,6 +5,12 @@
 
     <application>
         <!--
+          Every activity pins android:theme. Without it they inherit the HOST
+          app's theme, and these layouts use MaterialToolbar, Chip and
+          MaterialButton, which throw at inflation time under a theme that is
+          not a MaterialComponents descendant. A library dropped into an
+          arbitrary app cannot assume anything about that app's theme.
+
           All four are exported="false" on purpose: they render auth headers,
           cookies and response payloads. Another app on the device must never
           be able to launch them.
@@ -13,26 +19,30 @@
             android:name=".internal.ui.RequestListActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:label="Network Inspector"
+            android:theme="@style/Theme.AProxyI"
+            android:label="AProxyI"
             android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.RequestDetailActivity"
             android:exported="false"
             android:excludeFromRecents="true"
+            android:theme="@style/Theme.AProxyI"
             android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.AnalyticsListActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:label="Analytics Inspector"
+            android:theme="@style/Theme.AProxyI"
+            android:label="AProxyI Analytics"
             android:taskAffinity="com.aproxyi.inspector" />
 
         <activity
             android:name=".internal.ui.AnalyticsDetailActivity"
             android:exported="false"
             android:excludeFromRecents="true"
+            android:theme="@style/Theme.AProxyI"
             android:taskAffinity="com.aproxyi.inspector" />
 
         <receiver

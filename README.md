@@ -92,7 +92,7 @@ tools" menu item — since in release it would open nothing.
 ```kotlin
 // AProxyI.isEnabled() is false in release builds
 if (AProxyI.isEnabled()) {
-    menu.add("Network Inspector").setOnMenuItemClickListener {
+    menu.add("AProxyI").setOnMenuItemClickListener {
         AProxyI.launch(this); true
     }
 }
@@ -305,7 +305,7 @@ AProxyI.init(
 | `maxRequests` | `500` | Ring size; oldest are dropped. |
 | `maxBodySize` | `200_000` | Max stored body length, in characters. |
 | `logToLogcat` | `true` | Mirror captures to Logcat. |
-| `notificationChannelName` | `"Network Inspector"` | Channel name shown in settings. |
+| `notificationChannelName` | `"AProxyI"` | Channel name shown in settings. |
 | `excludedHosts` | empty | Regexes matched against the **host only**. |
 | `excludedPaths` | empty | Regexes matched against the **path only**. |
 | `redactedHeaders` | 8 headers | Header names whose values are replaced. |

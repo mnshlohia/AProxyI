@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.aproxyi.AnalyticsInspector
@@ -17,7 +18,7 @@ import com.aproxyi.core.AnalyticsEvent
 import com.aproxyi.core.AnalyticsSource
 
 /**
- * Activity to display analytics event details - matches Network Inspector styling
+ * Activity to display analytics event details - matches AProxyI styling
  */
 internal class AnalyticsDetailActivity : AppCompatActivity() {
     
@@ -97,7 +98,7 @@ internal class AnalyticsDetailActivity : AppCompatActivity() {
             AnalyticsSource.APPSFLYER -> R.color.aproxyi_success
             AnalyticsSource.FACEBOOK -> R.color.aproxyi_accent
         }
-        return getColor(colorRes)
+        return ContextCompat.getColor(this, colorRes)
     }
     
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -1,5 +1,6 @@
 package com.aproxyi
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -55,6 +56,10 @@ object AProxyI {
     private var appContext: Context? = null
     private var initialized = false
     private var config: AProxyIConfig = AProxyIConfig.RELEASE
+    // Holds the APPLICATION context (init() stores context.applicationContext),
+    // which outlives this object anyway, so this is not the activity leak lint
+    // is warning about.
+    @SuppressLint("StaticFieldLeak")
     private var notificationManager: AProxyINotificationManager? = null
     
     // Request storage

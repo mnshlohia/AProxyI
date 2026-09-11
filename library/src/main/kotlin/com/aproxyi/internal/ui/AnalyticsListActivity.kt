@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,7 +23,7 @@ import com.aproxyi.core.AnalyticsEvent
 import com.aproxyi.core.AnalyticsSource
 
 /**
- * Activity to display analytics events - matches Network Inspector styling
+ * Activity to display analytics events - matches AProxyI styling
  */
 internal class AnalyticsListActivity : AppCompatActivity(), AnalyticsInspector.EventListener {
     
@@ -249,7 +250,7 @@ internal class AnalyticsAdapter(
                 AnalyticsSource.APPSFLYER -> R.color.aproxyi_success
                 AnalyticsSource.FACEBOOK -> R.color.aproxyi_accent
             }
-            return itemView.context.getColor(colorRes)
+            return ContextCompat.getColor(itemView.context, colorRes)
         }
     }
 }

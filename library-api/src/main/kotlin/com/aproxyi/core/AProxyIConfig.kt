@@ -23,7 +23,7 @@ data class AProxyIConfig(
     val logToLogcat: Boolean = true,
 
     /** Custom notification channel name */
-    val notificationChannelName: String = "Network Inspector",
+    val notificationChannelName: String = "AProxyI",
 
     /**
      * Regex patterns matched against the URL's **host only** (e.g. `analytics\\.`).

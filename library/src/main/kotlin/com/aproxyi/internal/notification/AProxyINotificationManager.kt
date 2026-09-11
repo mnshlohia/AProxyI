@@ -90,7 +90,7 @@ internal class AProxyINotificationManager(
         
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_aproxyi)
-            .setContentTitle("Network Inspector")
+            .setContentTitle("AProxyI")
             .setContentText(contentText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(expandedText))
             .setContentIntent(pendingIntent)
